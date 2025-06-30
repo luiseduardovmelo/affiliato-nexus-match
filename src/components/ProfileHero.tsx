@@ -1,4 +1,5 @@
 
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Settings } from 'lucide-react';
@@ -41,7 +42,26 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
   return (
     <div className="relative mb-8 bg-white border border-brand-accent/15 rounded-xl shadow-sm overflow-hidden">
       {/* Hero Cover */}
-      <div className="h-32 bg-gradient-to-r from-brand-primary to-brand-accent" />
+      <div className="h-32 bg-gradient-to-r from-brand-primary to-brand-accent relative">
+        {/* Action Buttons - positioned in top right corner */}
+        <div className="absolute top-4 right-4 flex gap-2">
+          <Button 
+            size="sm"
+            className="bg-brand-success hover:bg-brand-accent text-white transition-all duration-200"
+          >
+            <Edit className="w-4 h-4 mr-1" />
+            Editar Perfil
+          </Button>
+          <Button 
+            size="sm"
+            variant="outline" 
+            className="border-white text-white hover:bg-white hover:text-brand-primary transition-all duration-200"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            Configurações
+          </Button>
+        </div>
+      </div>
       
       {/* Profile Info */}
       <div className="px-6 pb-6">
@@ -53,32 +73,11 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
             </span>
           </div>
           
-          {/* Name, Type & Action Buttons */}
-          <div className="text-center mt-4 w-full">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-2">
-              <h1 className="text-3xl font-bold text-brand-primary">
-                {profile.name}
-              </h1>
-              
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  className="bg-brand-success hover:bg-brand-accent text-white transition-all duration-200"
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  Editar Perfil
-                </Button>
-                <Button 
-                  size="sm"
-                  variant="outline" 
-                  className="border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white transition-all duration-200"
-                >
-                  <Settings className="w-4 h-4 mr-1" />
-                  Configurações
-                </Button>
-              </div>
-            </div>
+          {/* Name & Type */}
+          <div className="text-center mt-4">
+            <h1 className="text-3xl font-bold text-brand-primary mb-2">
+              {profile.name}
+            </h1>
             
             <div className="flex items-center justify-center gap-2">
               <span className="text-gray-600">{profile.type}</span>
@@ -117,3 +116,4 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
 };
 
 export default ProfileHero;
+
