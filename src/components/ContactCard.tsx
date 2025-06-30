@@ -18,6 +18,24 @@ const ContactCard = ({ contact }: ContactCardProps) => {
     navigator.clipboard.writeText(text);
   };
 
+  const handleEmailClick = () => {
+    window.open(`mailto:${contact.email}`, '_blank');
+  };
+
+  const handlePhoneClick = () => {
+    window.open(`tel:${contact.telefone}`, '_blank');
+  };
+
+  const handleWhatsAppClick = () => {
+    const cleanNumber = contact.whatsapp.replace(/[^\d+]/g, '');
+    window.open(`https://wa.me/${cleanNumber}`, '_blank');
+  };
+
+  const handleTelegramClick = () => {
+    const username = contact.telegram.replace('@', '');
+    window.open(`https://t.me/${username}`, '_blank');
+  };
+
   return (
     <div className="bg-white border border-brand-primary/15 rounded-lg p-6 mt-4">
       <h3 className="text-lg font-semibold text-brand-primary mb-4">Informações de Contato</h3>
@@ -28,14 +46,24 @@ const ContactCard = ({ contact }: ContactCardProps) => {
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
             <div className="flex items-center gap-2">
-              <span className="select-all font-mono text-sm text-gray-800">{contact.email}</span>
+              <span className="select-all font-mono text-sm text-gray-800 flex-1">{contact.email}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => copyToClipboard(contact.email)}
                 className="p-1 h-6 w-6"
+                title="Copiar e-mail"
               >
                 📋
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleEmailClick}
+                className="p-1 h-6 w-6 text-brand-primary hover:text-brand-accent"
+                title="Enviar e-mail"
+              >
+                <Mail className="w-3 h-3" />
               </Button>
             </div>
           </div>
@@ -46,14 +74,24 @@ const ContactCard = ({ contact }: ContactCardProps) => {
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
             <div className="flex items-center gap-2">
-              <span className="select-all font-mono text-sm text-gray-800">{contact.whatsapp}</span>
+              <span className="select-all font-mono text-sm text-gray-800 flex-1">{contact.whatsapp}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => copyToClipboard(contact.whatsapp)}
                 className="p-1 h-6 w-6"
+                title="Copiar WhatsApp"
               >
                 📋
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleWhatsAppClick}
+                className="p-1 h-6 w-6 text-green-600 hover:text-green-700"
+                title="Abrir WhatsApp"
+              >
+                💬
               </Button>
             </div>
           </div>
@@ -64,14 +102,24 @@ const ContactCard = ({ contact }: ContactCardProps) => {
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
             <div className="flex items-center gap-2">
-              <span className="select-all font-mono text-sm text-gray-800">{contact.telefone}</span>
+              <span className="select-all font-mono text-sm text-gray-800 flex-1">{contact.telefone}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => copyToClipboard(contact.telefone)}
                 className="p-1 h-6 w-6"
+                title="Copiar telefone"
               >
                 📋
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handlePhoneClick}
+                className="p-1 h-6 w-6 text-blue-600 hover:text-blue-700"
+                title="Fazer ligação"
+              >
+                <Phone className="w-3 h-3" />
               </Button>
             </div>
           </div>
@@ -82,14 +130,24 @@ const ContactCard = ({ contact }: ContactCardProps) => {
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">Telegram</label>
             <div className="flex items-center gap-2">
-              <span className="select-all font-mono text-sm text-gray-800">{contact.telegram}</span>
+              <span className="select-all font-mono text-sm text-gray-800 flex-1">{contact.telegram}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => copyToClipboard(contact.telegram)}
                 className="p-1 h-6 w-6"
+                title="Copiar Telegram"
               >
                 📋
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleTelegramClick}
+                className="p-1 h-6 w-6 text-blue-500 hover:text-blue-600"
+                title="Abrir Telegram"
+              >
+                <MessageCircle className="w-3 h-3" />
               </Button>
             </div>
           </div>
