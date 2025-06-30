@@ -1,17 +1,21 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { mockOperadores, mockAfiliados } from '@/data/mockListings';
 import ProfileHeader from '@/components/ProfileHeader';
 import BadgeList from '@/components/BadgeList';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
+import AboutSection from '@/components/AboutSection';
+import ContactCard from '@/components/ContactCard';
 import RevealModal from '@/components/RevealModal';
+import { Button } from '@/components/ui/button';
+import { useRevealState } from '@/hooks/useRevealState';
 import { useState } from 'react';
 
 const ProfilePage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isContactRevealed, setIsContactRevealed] = useState(false);
+  const { hasRevealed, revealContact } = useRevealState(id || '');
   
   // Buscar o perfil nos dados mock
   const allListings = [...mockOperadores, ...mockAfiliados];
@@ -33,95 +37,62 @@ const ProfilePage = () => {
     traffic: profile.type === 'afiliado' ? '50k visitas/mês' : undefined,
     languages: [profile.language, 'Inglês'],
     contact: {
-      email: 'contato@exemplo.com',
-      telegram: '@exemplo_usuario'
+      email: "royal@casino.com",
+      whatsapp: "+356 9911-2233", 
+      telefone: "+356 2200-3300",
+      telegram: "@royalgaming"
     }
+  };
+
+  const handleRevealContact = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmReveal = () => {
+    revealContact();
+    setIsModalOpen(false);
   };
 
   return (
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <ProfileHeader profile={profileData} />
+        {/* Botão Voltar */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-6 flex items-center gap-2 text-brand-primary hover:text-brand-accent"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
+        </Button>
+
+        {/* Header do Perfil */}
+        <ProfileHeader 
+          profile={profileData} 
+          hasRevealed={hasRevealed}
+          onRevealContact={handleRevealContact}
+        />
         
+        {/* Contact Card (se revelado) */}
+        {hasRevealed && (
+          <ContactCard contact={profileData.contact} />
+        )}
+        
+        {/* Badges */}
         <div className="mt-8">
           <BadgeList badges={profileData.badges} />
         </div>
 
+        {/* Seção Sobre (sempre aberta) */}
         <div className="mt-8">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="about">
-              <AccordionTrigger className="text-lg font-semibold text-brand-primary">
-                Sobre
-              </AccordionTrigger>
-              <AccordionContent className="pt-4">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-brand-primary mb-2">País</h4>
-                    <p className="text-gray-600">{profileData.country}</p>
-                  </div>
-                  
-                  {profileData.type === 'operador' ? (
-                    <div>
-                      <h4 className="font-medium text-brand-primary mb-2">Payout</h4>
-                      <p className="text-gray-600">{profileData.payout}</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <h4 className="font-medium text-brand-primary mb-2">Tráfego</h4>
-                      <p className="text-gray-600">{profileData.traffic}</p>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h4 className="font-medium text-brand-primary mb-2">Idiomas</h4>
-                    <p className="text-gray-600">{profileData.languages.join(', ')}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-brand-primary mb-2">Descrição</h4>
-                    <p className="text-gray-600 leading-relaxed">{profileData.description}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-brand-primary mb-2">Especialidades</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {profileData.specialties.map((specialty, index) => (
-                        <span 
-                          key={index}
-                          className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <AboutSection profile={profileData} />
         </div>
 
-        <div className="mt-8 flex justify-center">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            disabled={isContactRevealed}
-            className={`px-8 py-3 text-white font-medium rounded-lg transition-colors ${
-              isContactRevealed 
-                ? 'bg-gray-500 cursor-not-allowed' 
-                : 'bg-green-500 hover:bg-green-600'
-            }`}
-          >
-            {isContactRevealed ? 'Contato já revelado' : 'Mostrar contato'}
-          </Button>
-        </div>
-
+        {/* Modal de Revelação */}
         <RevealModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onConfirm={() => {
-            setIsContactRevealed(true);
-            setIsModalOpen(false);
-          }}
+          onConfirm={handleConfirmReveal}
           contact={profileData.contact}
         />
       </div>
