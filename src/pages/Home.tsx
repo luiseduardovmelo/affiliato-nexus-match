@@ -1,8 +1,10 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginModal from '@/components/LoginModal';
 import PodiumCard from '@/components/PodiumCard';
+import MatchPerfectSection from '@/components/MatchPerfectSection';
 import { mockTopOperadores, mockTopAfiliados } from '@/data/mockTop';
 
 const Home = () => {
@@ -128,7 +130,7 @@ const Home = () => {
         </section>
 
         {/* Podiums Section */}
-        <section className="max-w-7xl mx-auto">
+        <section className="max-w-7xl mx-auto mb-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <PodiumCard
               title="Top Operadores"
@@ -142,6 +144,9 @@ const Home = () => {
             />
           </div>
         </section>
+
+        {/* Match Perfeito Section */}
+        <MatchPerfectSection />
       </div>
     </div>
   );
