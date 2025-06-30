@@ -1,22 +1,16 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginModal from '@/components/LoginModal';
-
 const Home = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
   };
-
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
   };
-
-  return (
-    <div className="space-y-12">
+  return <div className="space-y-12">
       {/* Hero Section */}
       <section className="text-center py-16">
         <div className="max-w-4xl mx-auto">
@@ -29,29 +23,14 @@ const Home = () => {
           
           {/* Login Button - Principal CTA */}
           <div className="mb-8">
-            <Button 
-              onClick={openLoginModal}
-              size="lg" 
-              className="bg-brand-success hover:bg-brand-accent text-white px-12 py-4 text-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
+            <Button onClick={openLoginModal} size="lg" className="bg-brand-success hover:bg-brand-accent text-white px-12 py-4 text-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
               Fazer Login
             </Button>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-brand-accent hover:bg-brand-primary text-white px-8 py-3 text-lg transition-all duration-200"
-            >
-              Começar Agora
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white px-8 py-3 text-lg transition-all duration-200"
-            >
-              Saiba Mais
-            </Button>
+            
+            
           </div>
         </div>
       </section>
@@ -115,11 +94,7 @@ const Home = () => {
           <p className="text-xl mb-8 opacity-90">
             Junte-se a milhares de profissionais que já estão conectados através da nossa plataforma
           </p>
-          <Button 
-            onClick={openLoginModal}
-            size="lg" 
-            className="bg-brand-success hover:bg-white hover:text-brand-primary text-white px-8 py-3 text-lg transition-all duration-200 transform hover:scale-105"
-          >
+          <Button onClick={openLoginModal} size="lg" className="bg-brand-success hover:bg-white hover:text-brand-primary text-white px-8 py-3 text-lg transition-all duration-200 transform hover:scale-105">
             Criar Conta Gratuita
           </Button>
         </div>
@@ -127,8 +102,6 @@ const Home = () => {
 
       {/* Login Modal */}
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
