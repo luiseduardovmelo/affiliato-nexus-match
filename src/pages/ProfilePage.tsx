@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { mockOperadores, mockAfiliados } from '@/data/mockListings';
@@ -44,6 +43,10 @@ const ProfilePage = () => {
     }
   };
 
+  const handleGoBack = () => {
+    navigate('/lista');
+  };
+
   const handleRevealContact = () => {
     setIsModalOpen(true);
   };
@@ -59,7 +62,7 @@ const ProfilePage = () => {
         {/* Botão Voltar */}
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="mb-6 flex items-center gap-2 text-brand-primary hover:text-brand-accent"
         >
           <ArrowLeft className="w-4 h-4" />
