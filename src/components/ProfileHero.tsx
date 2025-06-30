@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Settings } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { KPIData } from '@/hooks/useProfileData';
 
 interface ProfileHeroProps {
@@ -14,9 +14,10 @@ interface ProfileHeroProps {
   };
   kpis: KPIData[];
   loading: boolean;
+  onEdit?: () => void;
 }
 
-const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
+const ProfileHero = ({ profile, kpis, loading, onEdit }: ProfileHeroProps) => {
   if (loading) {
     return (
       <div className="relative mb-8">
@@ -43,22 +44,14 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
     <div className="relative mb-8 bg-white border border-brand-accent/15 rounded-xl shadow-sm overflow-hidden">
       {/* Hero Cover */}
       <div className="h-32 bg-gradient-to-r from-brand-primary to-brand-accent relative">
-        {/* Action Buttons - positioned in top right corner */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        {/* Edit Button - Desktop positioning */}
+        <div className="hidden md:block absolute top-4 right-4">
           <Button 
-            size="sm"
-            className="bg-brand-success hover:bg-brand-accent text-white transition-all duration-200"
+            className="w-40 bg-brand-success hover:bg-brand-accent text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-white"
+            onClick={onEdit}
           >
-            <Edit className="w-4 h-4 mr-1" />
-            Editar Perfil
-          </Button>
-          <Button 
-            size="sm"
-            variant="outline" 
-            className="border-white text-white hover:bg-white hover:text-brand-primary transition-all duration-200"
-          >
-            <Settings className="w-4 h-4 mr-1" />
-            Configurações
+            <Pencil className="w-4 h-4 mr-2" />
+            Editar perfil
           </Button>
         </div>
       </div>
@@ -86,6 +79,17 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
                   Verificado
                 </Badge>
               )}
+            </div>
+            
+            {/* Edit Button - Mobile positioning */}
+            <div className="md:hidden mt-3">
+              <Button 
+                className="w-48 bg-brand-success hover:bg-brand-accent text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-white"
+                onClick={onEdit}
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Editar perfil
+              </Button>
             </div>
           </div>
         </div>
