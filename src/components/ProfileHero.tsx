@@ -1,5 +1,3 @@
-
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
@@ -60,7 +58,7 @@ const ProfileHero = ({ profile, kpis, loading, onEdit }: ProfileHeroProps) => {
       <div className="px-6 pb-6">
         <div className="flex flex-col items-center -mt-12 mb-6">
           {/* Avatar */}
-          <div className="w-24 h-24 bg-gradient-to-br from-brand-accent to-brand-success rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+          <div className="w-24 h-24 bg-gradient-to-br from-brand-accent to-brand-success rounded-full border-4 border-white shadow-lg flex items-center justify-center relative z-10">
             <span className="text-white font-bold text-2xl">
               {profile.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
             </span>
@@ -120,4 +118,3 @@ const ProfileHero = ({ profile, kpis, loading, onEdit }: ProfileHeroProps) => {
 };
 
 export default ProfileHero;
-
