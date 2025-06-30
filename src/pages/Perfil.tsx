@@ -3,7 +3,6 @@ import ProfileHero from '@/components/ProfileHero';
 import ProfileCardLeft from '@/components/ProfileCardLeft';
 import AboutCard from '@/components/AboutCard';
 import ActivityTimeline from '@/components/ActivityTimeline';
-import FloatingActionBar from '@/components/FloatingActionBar';
 import { useProfileData, useKPIData, useActivities } from '@/hooks/useProfileData';
 
 const Perfil = () => {
@@ -52,9 +51,6 @@ const Perfil = () => {
             />
           </div>
         </div>
-
-        {/* Floating Action Bar */}
-        <FloatingActionBar />
       </div>
     </div>
   );

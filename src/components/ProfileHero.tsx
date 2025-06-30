@@ -1,5 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Edit, Settings } from 'lucide-react';
 import { KPIData } from '@/hooks/useProfileData';
 
 interface ProfileHeroProps {
@@ -51,11 +53,33 @@ const ProfileHero = ({ profile, kpis, loading }: ProfileHeroProps) => {
             </span>
           </div>
           
-          {/* Name & Type */}
-          <div className="text-center mt-4">
-            <h1 className="text-3xl font-bold text-brand-primary mb-2">
-              {profile.name}
-            </h1>
+          {/* Name, Type & Action Buttons */}
+          <div className="text-center mt-4 w-full">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-2">
+              <h1 className="text-3xl font-bold text-brand-primary">
+                {profile.name}
+              </h1>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  className="bg-brand-success hover:bg-brand-accent text-white transition-all duration-200"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  Editar Perfil
+                </Button>
+                <Button 
+                  size="sm"
+                  variant="outline" 
+                  className="border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white transition-all duration-200"
+                >
+                  <Settings className="w-4 h-4 mr-1" />
+                  Configurações
+                </Button>
+              </div>
+            </div>
+            
             <div className="flex items-center justify-center gap-2">
               <span className="text-gray-600">{profile.type}</span>
               {profile.isVerified && (
