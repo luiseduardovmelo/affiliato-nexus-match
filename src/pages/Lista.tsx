@@ -1,19 +1,23 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useNavigate } from 'react-router-dom';
 import ListingCard from '@/components/ListingCard';
 import FilterDrawer, { FilterState } from '@/components/FilterDrawer';
+import FloatingFilterButton from '@/components/FloatingFilterButton';
 import { mockOperadores, mockAfiliados, Listing } from '@/data/mockListings';
 
 const Lista = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'operadores' | 'afiliados'>('operadores');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(6);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     country: '',
     language: '',
@@ -90,9 +94,19 @@ const Lista = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-brand-primary mb-4">
-            Explore Parceiros
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-4xl font-bold text-brand-primary">
+              Explore Parceiros
+            </h1>
+          </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Descubra operadores e afiliados verificados prontos para estabelecer parcerias estratégicas
           </p>
@@ -122,21 +136,14 @@ const Lista = () => {
               </ToggleGroupItem>
             </ToggleGroup>
 
-            {/* Search and Filter */}
-            <div className="flex gap-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-80">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por nome..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <FilterDrawer
-                filters={filters}
-                onFiltersChange={setFilters}
-                onClearFilters={handleClearFilters}
+            {/* Search */}
+            <div className="relative flex-1 sm:w-80">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Buscar por nome..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
               />
             </div>
           </div>
@@ -203,6 +210,22 @@ const Lista = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Filter Button */}
+      <FloatingFilterButton
+        activeFiltersCount={activeFilters.length}
+        isDrawerOpen={isFilterDrawerOpen}
+        onClick={() => setIsFilterDrawerOpen(true)}
+      />
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={handleClearFilters}
+        isOpen={isFilterDrawerOpen}
+        onOpenChange={setIsFilterDrawerOpen}
+      />
     </div>
   );
 };

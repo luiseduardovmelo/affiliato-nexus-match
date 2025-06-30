@@ -1,11 +1,9 @@
 
-import { useState } from 'react';
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
 
 export interface FilterState {
   country: string;
@@ -17,11 +15,11 @@ interface FilterDrawerProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onClearFilters: () => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const FilterDrawer = ({ filters, onFiltersChange, onClearFilters }: FilterDrawerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
+const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false, onOpenChange }: FilterDrawerProps) => {
   const countries = ['Todos', 'Brasil', 'Portugal', 'Reino Unido', 'Espanha', 'Estados Unidos'];
   const languages = ['Todos', 'Português', 'Inglês', 'Espanhol'];
 
@@ -57,18 +55,7 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters }: FilterDrawer
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Filter className="h-4 w-4" />
-          {activeFiltersCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-brand-accent">
-              {activeFiltersCount}
-            </Badge>
-          )}
-        </Button>
-      </SheetTrigger>
-      
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-80">
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
