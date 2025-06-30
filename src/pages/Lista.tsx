@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useMemo } from 'react';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +7,6 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useNavigate } from 'react-router-dom';
 import ListingCard from '@/components/ListingCard';
 import FilterDrawer, { FilterState } from '@/components/FilterDrawer';
-import FloatingFilterButton from '@/components/FloatingFilterButton';
 import { mockOperadores, mockAfiliados, Listing } from '@/data/mockListings';
 
 const Lista = () => {
@@ -136,15 +134,30 @@ const Lista = () => {
               </ToggleGroupItem>
             </ToggleGroup>
 
-            {/* Search */}
-            <div className="relative flex-1 sm:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar por nome..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            {/* Search and Filter */}
+            <div className="flex gap-2 flex-1 sm:w-auto sm:max-w-96">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsFilterDrawerOpen(true)}
+                className="shrink-0 relative"
+              >
+                <Filter className="h-4 w-4" />
+                {activeFilters.length > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-brand-accent text-white border-2 border-white">
+                    {activeFilters.length}
+                  </Badge>
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -210,13 +223,6 @@ const Lista = () => {
           </div>
         )}
       </div>
-
-      {/* Floating Filter Button */}
-      <FloatingFilterButton
-        activeFiltersCount={activeFilters.length}
-        isDrawerOpen={isFilterDrawerOpen}
-        onClick={() => setIsFilterDrawerOpen(true)}
-      />
 
       {/* Filter Drawer */}
       <FilterDrawer
