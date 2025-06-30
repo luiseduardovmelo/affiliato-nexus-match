@@ -26,6 +26,37 @@ const Header = () => {
     setIsLoggedIn(!isLoggedIn);
   };
 
+  // Header para usuário não logado
+  if (!isLoggedIn) {
+    return (
+      <header className="bg-brand-primary shadow-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-accent to-brand-success rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">iG</span>
+              </div>
+              <span className="text-white font-bold text-xl hidden sm:block">
+                iGaming Connect
+              </span>
+            </Link>
+
+            {/* Botão Login centralizado e destacado */}
+            <Button
+              onClick={handleAuthClick}
+              size="lg"
+              className="bg-brand-success hover:bg-brand-accent text-white px-8 py-3 text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+            >
+              Fazer Login
+            </Button>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // Header para usuário logado (com navegação completa)
   return (
     <header className="bg-brand-primary shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -63,7 +94,7 @@ const Header = () => {
               onClick={handleAuthClick}
               className="bg-brand-success hover:bg-brand-accent text-white transition-colors duration-200"
             >
-              {isLoggedIn ? 'Logout' : 'Login'}
+              Logout
             </Button>
 
             {/* Mobile Menu Button */}
