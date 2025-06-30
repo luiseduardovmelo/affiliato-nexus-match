@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Simulating authenticated user - in real app this would come from auth context
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const location = useLocation();
 
   const navItems = [
