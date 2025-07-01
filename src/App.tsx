@@ -21,7 +21,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppShell />}>
-            <Route index element={<Home />} />
+            <Route index element={<Lista />} />
+            <Route path="home" element={<Home />} />
             <Route path="lista" element={<Lista />} />
             <Route path="perfil" element={<Perfil />} />
             <Route path="profile/:id" element={<ProfilePage />} />
