@@ -9,6 +9,7 @@ import ProfileDetailSection from '@/components/ProfileDetailSection';
 import ContactCard from '@/components/ContactCard';
 import RevealModal from '@/components/RevealModal';
 import ProfileEditForm from '@/components/ProfileEditForm';
+import RatingSystem from '@/components/RatingSystem';
 import { Button } from '@/components/ui/button';
 import { useRevealState } from '@/hooks/useRevealState';
 import { useState } from 'react';
@@ -137,6 +138,14 @@ const ProfilePage = () => {
         {hasRevealed && (
           <ContactCard contact={profileData.contact} />
         )}
+        
+        {/* Sistema de Avaliação */}
+        <RatingSystem 
+          profileId={profile.id}
+          currentRating={profile.rating}
+          totalRatings={45}
+          userHasRated={false}
+        />
         
         {/* Badges */}
         <div className="mt-8">
