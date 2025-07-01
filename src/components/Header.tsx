@@ -1,15 +1,23 @@
 
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Users, Star, User } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Users, Star, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    // Clear any stored auth data
+    localStorage.clear();
+    // Navigate to home page
+    navigate('/home');
   };
 
   const isActivePath = (path: string) => {
@@ -69,6 +77,15 @@ const Header = () => {
               <User className="w-4 h-4" />
               <span>Perfil</span>
             </Link>
+
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair</span>
+            </Button>
           </nav>
 
           {/* Mobile menu button */}
@@ -124,6 +141,18 @@ const Header = () => {
                 <User className="w-4 h-4" />
                 <span>Perfil</span>
               </Link>
+
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50 justify-start"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sair</span>
+              </Button>
             </nav>
           </div>
         )}

@@ -11,7 +11,7 @@ const Home = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
   // Simulating authenticated user - in real app this would come from auth context
-  const isAuthenticated = true;
+  const isAuthenticated = false; // Changed to false to show login page
 
   const openLoginModal = () => {
     setIsLoginModalOpen(true);

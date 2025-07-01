@@ -1,19 +1,35 @@
 
-import { Star, Users, CreditCard, Calendar, Target, CheckCircle, XCircle } from 'lucide-react';
+import { Star, Users, CreditCard, Calendar, Target, CheckCircle, XCircle, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { Listing } from '@/data/mockListings';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useRevealState } from '@/hooks/useRevealState';
 
 interface ListingCardProps {
   listing: Listing;
 }
 
 const ListingCard = ({ listing }: ListingCardProps) => {
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const { hasRevealed } = useRevealState(listing.id);
+  
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(listing.id);
+  };
+
+  // Determine card styling based on revealed contact status
+  const cardClassName = hasRevealed 
+    ? "bg-gradient-to-br from-brand-primary/5 to-brand-accent/5 border-brand-primary/20 hover:shadow-lg transition-all duration-200"
+    : "bg-white border border-gray-200 hover:shadow-lg transition-all duration-200";
+
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-200">
+    <Card className={cardClassName}>
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
           <Avatar className="w-12 h-12">
@@ -26,13 +42,37 @@ const ListingCard = ({ listing }: ListingCardProps) => {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <CardTitle className="text-lg text-brand-primary">{listing.name}</CardTitle>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-brand-warning text-brand-warning" />
-                <span className="text-sm font-medium text-gray-700">
-                  {listing.rating.toFixed(1)}
-                </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFavoriteClick}
+                  className="p-1 h-8 w-8 hover:bg-red-50"
+                >
+                  <Heart 
+                    className={`w-4 h-4 ${
+                      isFavorite(listing.id) 
+                        ? 'fill-red-500 text-red-500' 
+                        : 'text-gray-400 hover:text-red-500'
+                    }`} 
+                  />
+                </Button>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-brand-warning text-brand-warning" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {listing.rating.toFixed(1)}
+                  </span>
+                </div>
               </div>
             </div>
+            
+            {hasRevealed && (
+              <div className="mb-2">
+                <Badge variant="secondary" className="bg-brand-primary/10 text-brand-primary text-xs">
+                  Contato Revelado
+                </Badge>
+              </div>
+            )}
             
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline" className="text-xs">
@@ -131,7 +171,11 @@ const ListingCard = ({ listing }: ListingCardProps) => {
         <Button 
           asChild
           variant="outline" 
-          className="w-full border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white"
+          className={`w-full transition-colors ${
+            hasRevealed
+              ? 'border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white'
+              : 'border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white'
+          }`}
         >
           <Link to={`/profile/${listing.id}`}>
             Ver Perfil

@@ -9,6 +9,7 @@ import Lista from "./pages/Lista";
 import Destaques from "./pages/Destaques";
 import Perfil from "./pages/Perfil";
 import ProfilePage from "./pages/ProfilePage";
+import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/home" element={<Home />} />
           <Route path="/" element={<AppShell />}>
             <Route index element={<Lista />} />
             <Route path="destaques" element={<Destaques />} />
