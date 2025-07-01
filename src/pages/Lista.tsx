@@ -1,16 +1,15 @@
+
 import { useState, useEffect, useMemo } from 'react';
-import { Search, ArrowLeft, Filter } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useNavigate } from 'react-router-dom';
 import ListingCard from '@/components/ListingCard';
 import FilterDrawer, { FilterState } from '@/components/FilterDrawer';
 import { mockOperadores, mockAfiliados, Listing } from '@/data/mockListings';
 
 const Lista = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'operadores' | 'afiliados'>('operadores');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -19,7 +18,17 @@ const Lista = () => {
   const [filters, setFilters] = useState<FilterState>({
     country: '',
     language: '',
-    minRating: 0
+    minRating: 0,
+    monthlyTrafficVolume: '',
+    commissionModels: [],
+    paymentFrequency: '',
+    platformType: '',
+    acceptsRetargeting: null,
+    installsPostback: null,
+    chargedValue: '',
+    desiredCommissionMethod: '',
+    trafficTypes: [],
+    currentOperators: []
   });
 
   // Debounce search
@@ -43,9 +52,33 @@ const Lista = () => {
       const matchesLanguage = !filters.language || item.language === filters.language;
       const matchesRating = item.rating >= filters.minRating;
 
+      // Filtros específicos para operadores
+      if (activeTab === 'operadores') {
+        const matchesCommissionModels = filters.commissionModels.length === 0 || 
+          (item.commissionModels && filters.commissionModels.some(model => item.commissionModels?.includes(model)));
+        const matchesPaymentFreq = !filters.paymentFrequency || item.paymentFrequency === filters.paymentFrequency;
+        const matchesPlatformType = !filters.platformType || item.platformType === filters.platformType;
+        const matchesRetargeting = filters.acceptsRetargeting === null || item.acceptsRetargeting === filters.acceptsRetargeting;
+        const matchesPostback = filters.installsPostback === null || item.installsPostback === filters.installsPostback;
+
+        return matchesSearch && matchesCountry && matchesLanguage && matchesRating && 
+               matchesCommissionModels && matchesPaymentFreq && matchesPlatformType && 
+               matchesRetargeting && matchesPostback;
+      }
+
+      // Filtros específicos para afiliados
+      if (activeTab === 'afiliados') {
+        const matchesDesiredCommission = !filters.desiredCommissionMethod || item.desiredCommissionMethod === filters.desiredCommissionMethod;
+        const matchesTrafficTypes = filters.trafficTypes.length === 0 || 
+          (item.trafficTypes && filters.trafficTypes.some(type => item.trafficTypes?.includes(type)));
+
+        return matchesSearch && matchesCountry && matchesLanguage && matchesRating && 
+               matchesDesiredCommission && matchesTrafficTypes;
+      }
+
       return matchesSearch && matchesCountry && matchesLanguage && matchesRating;
     });
-  }, [currentData, debouncedSearch, filters]);
+  }, [currentData, debouncedSearch, filters, activeTab]);
 
   // Visible data with pagination
   const visibleData = filteredData.slice(0, visibleCount);
@@ -66,7 +99,17 @@ const Lista = () => {
     setFilters({
       country: '',
       language: '',
-      minRating: 0
+      minRating: 0,
+      monthlyTrafficVolume: '',
+      commissionModels: [],
+      paymentFrequency: '',
+      platformType: '',
+      acceptsRetargeting: null,
+      installsPostback: null,
+      chargedValue: '',
+      desiredCommissionMethod: '',
+      trafficTypes: [],
+      currentOperators: []
     });
   };
 
@@ -74,14 +117,24 @@ const Lista = () => {
     const activeFilters = [];
     if (filters.country) activeFilters.push({ key: 'country', label: filters.country });
     if (filters.language) activeFilters.push({ key: 'language', label: filters.language });
-    if (filters.minRating > 0) activeFilters.push({ key: 'rating', label: `Rating ≥ ${filters.minRating.toFixed(1)}` });
+    if (filters.minRating > 0) activeFilters.push({ key: 'minRating', label: `Rating ≥ ${filters.minRating.toFixed(1)}` });
+    if (filters.commissionModels.length > 0) activeFilters.push({ key: 'commissionModels', label: `Comissão: ${filters.commissionModels.join(', ')}` });
+    if (filters.paymentFrequency) activeFilters.push({ key: 'paymentFrequency', label: `Pagamento: ${filters.paymentFrequency}` });
+    if (filters.platformType) activeFilters.push({ key: 'platformType', label: `Plataforma: ${filters.platformType}` });
+    if (filters.acceptsRetargeting !== null) activeFilters.push({ key: 'acceptsRetargeting', label: `Retargeting: ${filters.acceptsRetargeting ? 'Sim' : 'Não'}` });
+    if (filters.installsPostback !== null) activeFilters.push({ key: 'installsPostback', label: `Postback: ${filters.installsPostback ? 'Sim' : 'Não'}` });
+    if (filters.desiredCommissionMethod) activeFilters.push({ key: 'desiredCommissionMethod', label: `Método: ${filters.desiredCommissionMethod}` });
+    if (filters.trafficTypes.length > 0) activeFilters.push({ key: 'trafficTypes', label: `Tráfego: ${filters.trafficTypes.length} tipos` });
     return activeFilters;
   };
 
   const removeFilter = (filterKey: string) => {
     setFilters(prev => ({
       ...prev,
-      [filterKey]: filterKey === 'minRating' ? 0 : ''
+      [filterKey]: filterKey === 'minRating' ? 0 : 
+                   filterKey === 'acceptsRetargeting' || filterKey === 'installsPostback' ? null :
+                   filterKey === 'commissionModels' || filterKey === 'trafficTypes' || filterKey === 'currentOperators' ? [] :
+                   ''
     }));
   };
 
@@ -92,19 +145,9 @@ const Lista = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="hover:bg-gray-100"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-4xl font-bold text-brand-primary">
-              Explore Parceiros
-            </h1>
-          </div>
+          <h1 className="text-4xl font-bold text-brand-primary mb-4">
+            Explore Parceiros
+          </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Descubra operadores e afiliados verificados prontos para estabelecer parcerias estratégicas
           </p>
@@ -147,13 +190,13 @@ const Lista = () => {
               </div>
               <Button
                 variant="outline"
-                size="icon"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className="shrink-0 relative"
+                className="shrink-0 relative px-4"
               >
-                <Filter className="h-4 w-4" />
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
                 {activeFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-brand-accent text-white border-2 border-white">
+                  <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-brand-accent text-white">
                     {activeFilters.length}
                   </Badge>
                 )}
@@ -231,6 +274,7 @@ const Lista = () => {
         onClearFilters={handleClearFilters}
         isOpen={isFilterDrawerOpen}
         onOpenChange={setIsFilterDrawerOpen}
+        activeTab={activeTab}
       />
     </div>
   );
