@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,23 @@ const trafficSourceOptions = [
   'Influencer Marketing',
   'Mídia Paga (Google Ads, Facebook Ads)',
   'Orgânico/SEO',
+  'Outros'
+];
+
+const promotionChannelOptions = [
+  'YouTube',
+  'Instagram',
+  'TikTok',
+  'Facebook',
+  'Twitter/X',
+  'Twitch',
+  'Kick',
+  'Discord',
+  'Telegram',
+  'WhatsApp',
+  'Website/Blog',
+  'Podcast',
+  'Newsletter',
   'Outros'
 ];
 
@@ -109,6 +125,23 @@ const AfiliadoForm = ({ data, onUpdate, onNext, onBack }: AfiliadoFormProps) => 
             ))}
           </div>
           {errors.trafficSources && <p className="text-red-500 text-sm">{errors.trafficSources}</p>}
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">Canais de Divulgação</Label>
+          <p className="text-sm text-gray-600">Selecione os canais onde você promove seus conteúdos</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {promotionChannelOptions.map((option) => (
+              <div key={option} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`channel-${option}`}
+                  checked={(data.promotionChannels || []).includes(option)}
+                  onCheckedChange={(checked) => handleArrayChange('promotionChannels', option, !!checked)}
+                />
+                <Label htmlFor={`channel-${option}`} className="text-sm">{option}</Label>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-4">

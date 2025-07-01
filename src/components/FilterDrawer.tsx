@@ -1,4 +1,4 @@
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Youtube, Globe, Search, Facebook, Instagram, Zap, Mail, Smartphone, Users, MessageCircle, Radio, Eye, MousePointer, AlertTriangle, Newspaper, Target, AppWindow, Star, MessageSquare, Globe2, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,6 +26,7 @@ export interface FilterState {
   desiredCommissionMethod: ComissionModel | '';
   trafficTypes: TrafficType[];
   currentOperators: string[];
+  promotionChannels: string[]; // Nova propriedade
 }
 
 interface FilterDrawerProps {
@@ -44,31 +45,36 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
   const paymentFrequencies: PaymentFrequency[] = ['semanal', 'quinzenal', 'mensal'];
   const platformTypes: PlatformType[] = ['Cassino', 'Apostas Esportivas', 'Poker', 'Bingo', 'Completa'];
   
-  const trafficTypes: TrafficType[] = [
-    'SEO (blogs, sites de review, comparadores de odds)',
-    'YouTube orgânico',
-    'Google Ads',
-    'Facebook Ads / Instagram Ads',
-    'TikTok Ads',
-    'DSPs (mídia programática)',
-    'Push notifications',
-    'Native ads (Taboola, Outbrain, etc.)',
-    'Influenciadores (YouTube, Twitch, Kick)',
-    'Grupos de Telegram',
-    'Grupos de WhatsApp',
-    'Canais de Discord',
-    'E-mail marketing',
-    'Pop-unders',
-    'Redirects',
-    'Cloaking',
-    'Fake news pages',
-    'Retargeting (via pixel ou DSP)',
-    'Tráfego via apps (Android .apk ou app próprio)',
-    'ASO (App Store Optimization)',
-    'Fóruns de apostas / Reddit',
-    'Tráfego direto (digitação de URL)',
-    'SMS marketing',
-    'Tráfego comprado de redes (revenda de tráfego de outros afiliados)'
+  const trafficTypes: { name: TrafficType; icon: any; color: string }[] = [
+    { name: 'SEO (blogs, sites de review, comparadores de odds)', icon: Search, color: 'text-green-600' },
+    { name: 'YouTube orgânico', icon: Youtube, color: 'text-red-600' },
+    { name: 'Google Ads', icon: Search, color: 'text-blue-600' },
+    { name: 'Facebook Ads / Instagram Ads', icon: Facebook, color: 'text-blue-500' },
+    { name: 'TikTok Ads', icon: Smartphone, color: 'text-pink-600' },
+    { name: 'DSPs (mídia programática)', icon: Target, color: 'text-purple-600' },
+    { name: 'Push notifications', icon: Zap, color: 'text-orange-600' },
+    { name: 'Native ads (Taboola, Outbrain, etc.)', icon: Globe, color: 'text-indigo-600' },
+    { name: 'Influenciadores (YouTube, Twitch, Kick)', icon: Users, color: 'text-red-500' },
+    { name: 'Grupos de Telegram', icon: MessageCircle, color: 'text-blue-400' },
+    { name: 'Grupos de WhatsApp', icon: MessageSquare, color: 'text-green-500' },
+    { name: 'Canais de Discord', icon: MessageCircle, color: 'text-indigo-500' },
+    { name: 'E-mail marketing', icon: Mail, color: 'text-gray-600' },
+    { name: 'Pop-unders', icon: Eye, color: 'text-yellow-600' },
+    { name: 'Redirects', icon: MousePointer, color: 'text-orange-500' },
+    { name: 'Cloaking', icon: Eye, color: 'text-gray-500' },
+    { name: 'Fake news pages', icon: AlertTriangle, color: 'text-red-700' },
+    { name: 'Retargeting (via pixel ou DSP)', icon: Target, color: 'text-purple-500' },
+    { name: 'Tráfego via apps (Android .apk ou app próprio)', icon: AppWindow, color: 'text-green-600' },
+    { name: 'ASO (App Store Optimization)', icon: Star, color: 'text-blue-700' },
+    { name: 'Fóruns de apostas / Reddit', icon: MessageSquare, color: 'text-orange-600' },
+    { name: 'Tráfego direto (digitação de URL)', icon: Globe2, color: 'text-gray-700' },
+    { name: 'SMS marketing', icon: Smartphone, color: 'text-green-700' },
+    { name: 'Tráfego comprado de redes (revenda de tráfego de outros afiliados)', icon: Briefcase, color: 'text-purple-700' }
+  ];
+
+  const promotionChannels = [
+    'YouTube', 'Instagram', 'TikTok', 'Facebook', 'Twitter/X', 'Twitch', 'Kick', 
+    'Discord', 'Telegram', 'WhatsApp', 'Website/Blog', 'Podcast', 'Newsletter', 'Outros'
   ];
 
   const handleCountryChange = (value: string) => {
@@ -114,6 +120,17 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
     });
   };
 
+  const handlePromotionChannelChange = (channel: string, checked: boolean) => {
+    const newChannels = checked 
+      ? [...(filters.promotionChannels || []), channel]
+      : (filters.promotionChannels || []).filter(c => c !== channel);
+    
+    onFiltersChange({
+      ...filters,
+      promotionChannels: newChannels
+    });
+  };
+
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.country) count++;
@@ -128,6 +145,7 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
     if (filters.chargedValue) count++;
     if (filters.desiredCommissionMethod) count++;
     if (filters.trafficTypes.length > 0) count++;
+    if (filters.promotionChannels && filters.promotionChannels.length > 0) count++;
     return count;
   };
 
@@ -336,18 +354,36 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
                 </Select>
               </div>
 
-              {/* Traffic Types */}
+              {/* Promotion Channels */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Canais de Divulgação</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {promotionChannels.map((channel) => (
+                    <div key={channel} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`channel-${channel}`}
+                        checked={(filters.promotionChannels || []).includes(channel)}
+                        onCheckedChange={(checked) => handlePromotionChannelChange(channel, checked as boolean)}
+                      />
+                      <Label htmlFor={`channel-${channel}`} className="text-xs">{channel}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Traffic Types - Visual */}
               <div>
                 <Label className="text-sm font-medium mb-2 block">Tipos de Tráfego</Label>
-                <div className="space-y-2">
-                  {trafficTypes.map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {trafficTypes.map(({ name, icon: Icon, color }) => (
+                    <div key={name} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50">
                       <Checkbox
-                        id={`traffic-${type}`}
-                        checked={filters.trafficTypes.includes(type)}
-                        onCheckedChange={(checked) => handleTrafficTypeChange(type, checked as boolean)}
+                        id={`traffic-${name}`}
+                        checked={filters.trafficTypes.includes(name)}
+                        onCheckedChange={(checked) => handleTrafficTypeChange(name, checked as boolean)}
                       />
-                      <Label htmlFor={`traffic-${type}`} className="text-xs leading-tight">{type}</Label>
+                      <Icon className={`w-4 h-4 ${color}`} />
+                      <Label htmlFor={`traffic-${name}`} className="text-xs leading-tight flex-1">{name}</Label>
                     </div>
                   ))}
                 </div>
@@ -362,7 +398,7 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
             className="w-full"
             disabled={getActiveFiltersCount() === 0}
           >
-            Limpar Filtros
+            Limpar Filtros ({getActiveFiltersCount()})
           </Button>
         </div>
       </SheetContent>

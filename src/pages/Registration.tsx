@@ -64,7 +64,8 @@ const Registration = () => {
         monthlyTraffic: '',
         specialties: [],
         minimumCPM: 0,
-        worksWithOthers: false
+        worksWithOthers: false,
+        promotionChannels: [] // Inicializar canais de divulgação
       } : {
         monthlyVolume: '',
         commissionModels: [],

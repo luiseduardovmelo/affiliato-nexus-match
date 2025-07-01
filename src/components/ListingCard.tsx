@@ -1,5 +1,4 @@
-
-import { Star, Users, CreditCard, Calendar, Target, CheckCircle, XCircle, Heart } from 'lucide-react';
+import { Star, Users, CreditCard, Calendar, Target, CheckCircle, XCircle, Heart, Youtube, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,16 @@ const ListingCard = ({ listing }: ListingCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     toggleFavorite(listing.id);
+  };
+
+  // Função para obter ícone do canal
+  const getChannelIcon = (channel: string) => {
+    const channelLower = channel.toLowerCase();
+    if (channelLower.includes('youtube')) return <Youtube className="w-3 h-3" />;
+    if (channelLower.includes('instagram')) return <Instagram className="w-3 h-3" />;
+    if (channelLower.includes('facebook')) return <Facebook className="w-3 h-3" />;
+    if (channelLower.includes('twitter') || channelLower.includes('x')) return <Twitter className="w-3 h-3" />;
+    return null;
   };
 
   // Determine card styling based on revealed contact status
@@ -145,6 +154,22 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <Target className="w-3 h-3" />
                     <span>Prefere {listing.desiredCommissionMethod}</span>
+                  </div>
+                )}
+                {listing.promotionChannels && listing.promotionChannels.length > 0 && (
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-gray-700">Canais:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {listing.promotionChannels.slice(0, 4).map((channel, index) => (
+                        <div key={index} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs">
+                          {getChannelIcon(channel)}
+                          <span>{channel}</span>
+                        </div>
+                      ))}
+                      {listing.promotionChannels.length > 4 && (
+                        <span className="text-xs text-gray-500">+{listing.promotionChannels.length - 4}</span>
+                      )}
+                    </div>
                   </div>
                 )}
                 {listing.currentOperators && listing.currentOperators.length > 0 && (

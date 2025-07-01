@@ -55,6 +55,7 @@ export interface Listing {
   previousOperators?: string[];
   currentOperators?: string[];
   trafficTypes?: TrafficType[];
+  promotionChannels?: string[]; // Nova propriedade
 }
 
 export const mockOperadores: Listing[] = [
@@ -166,7 +167,8 @@ export const mockAfiliados: Listing[] = [
     basicInfo: '5 anos de experiência no mercado iGaming brasileiro, foco em público adulto 25-45 anos',
     previousOperators: ['Bet365', 'Betfair', 'Sportingbet'],
     currentOperators: ['BetMaster Gaming', 'Lucky Casino Group'],
-    trafficTypes: ['SEO (blogs, sites de review, comparadores de odds)', 'Google Ads', 'YouTube orgânico']
+    trafficTypes: ['SEO (blogs, sites de review, comparadores de odds)', 'Google Ads', 'YouTube orgânico'],
+    promotionChannels: ['YouTube', 'Instagram', 'Website/Blog', 'Newsletter']
   },
   {
     id: 'af2',
@@ -183,7 +185,8 @@ export const mockAfiliados: Listing[] = [
     basicInfo: '7 anos no mercado, especializado em tráfego pago internacional',
     previousOperators: ['DraftKings', 'FanDuel', 'BetMGM'],
     currentOperators: ['Golden Bet Ltd'],
-    trafficTypes: ['Google Ads', 'Facebook Ads / Instagram Ads', 'Native ads (Taboola, Outbrain, etc.)']
+    trafficTypes: ['Google Ads', 'Facebook Ads / Instagram Ads', 'Native ads (Taboola, Outbrain, etc.)'],
+    promotionChannels: ['Facebook', 'Instagram', 'Twitter/X', 'Website/Blog']
   },
   {
     id: 'af3',
@@ -200,7 +203,8 @@ export const mockAfiliados: Listing[] = [
     basicInfo: '3 anos focado no mercado europeu, especialista em otimização de conversão',
     previousOperators: ['William Hill', 'Ladbrokes'],
     currentOperators: ['Mega Win Casino', 'Royal Gaming'],
-    trafficTypes: ['Push notifications', 'E-mail marketing', 'Retargeting (via pixel ou DSP)']
+    trafficTypes: ['Push notifications', 'E-mail marketing', 'Retargeting (via pixel ou DSP)'],
+    promotionChannels: ['Newsletter', 'Website/Blog', 'Telegram']
   },
   {
     id: 'af4',
@@ -217,7 +221,8 @@ export const mockAfiliados: Listing[] = [
     basicInfo: '4 anos no mercado lusófono, parceria com influenciadores locais',
     previousOperators: ['Betclic', 'Betway'],
     currentOperators: ['BetMaster Gaming'],
-    trafficTypes: ['Influenciadores (YouTube, Twitch, Kick)', 'TikTok Ads', 'Grupos de Telegram']
+    trafficTypes: ['Influenciadores (YouTube, Twitch, Kick)', 'TikTok Ads', 'Grupos de Telegram'],
+    promotionChannels: ['YouTube', 'TikTok', 'Instagram', 'Twitch', 'Telegram']
   },
   {
     id: 'af5',
@@ -234,6 +239,7 @@ export const mockAfiliados: Listing[] = [
     basicInfo: '6 anos especializados no mercado hispânico, foco em dados e performance',
     previousOperators: ['Codere', 'Luckia'],
     currentOperators: ['Lucky Casino Group', 'Mega Win Casino'],
-    trafficTypes: ['DSPs (mídia programática)', 'SMS marketing', 'Fóruns de apostas / Reddit']
+    trafficTypes: ['DSPs (mídia programática)', 'SMS marketing', 'Fóruns de apostas / Reddit'],
+    promotionChannels: ['Website/Blog', 'Newsletter', 'Discord', 'Podcast']
   }
 ];

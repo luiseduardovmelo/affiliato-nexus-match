@@ -1,4 +1,3 @@
-
 export type UserType = 'afiliado' | 'operador';
 
 export interface BasicUserData {
@@ -24,6 +23,7 @@ export interface AfiliadoData {
   minimumCPM: number;
   worksWithOthers: boolean;
   otherOperatorsDetails?: string;
+  promotionChannels: string[]; // Nova propriedade
 }
 
 export interface OperadorData {
