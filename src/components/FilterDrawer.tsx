@@ -1,4 +1,3 @@
-
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -340,7 +339,7 @@ const FilterDrawer = ({ filters, onFiltersChange, onClearFilters, isOpen = false
               {/* Traffic Types */}
               <div>
                 <Label className="text-sm font-medium mb-2 block">Tipos de Tráfego</Label>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="space-y-2">
                   {trafficTypes.map((type) => (
                     <div key={type} className="flex items-center space-x-2">
                       <Checkbox
