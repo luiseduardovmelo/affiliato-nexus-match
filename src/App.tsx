@@ -10,6 +10,7 @@ import Destaques from "./pages/Destaques";
 import Perfil from "./pages/Perfil";
 import ProfilePage from "./pages/ProfilePage";
 import Home from "./pages/Home";
+import Registration from "./pages/Registration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/home" element={<Home />} />
+          <Route path="/registration" element={<Registration />} />
           <Route path="/" element={<AppShell />}>
             <Route index element={<Lista />} />
             <Route path="destaques" element={<Destaques />} />

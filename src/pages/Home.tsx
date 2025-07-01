@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, Globe, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import LoginModal from '@/components/LoginModal';
 import PodiumCard from '@/components/PodiumCard';
 import MatchPerfectSection from '@/components/MatchPerfectSection';
@@ -10,6 +11,7 @@ import { mockTopOperadores, mockTopAfiliados } from '@/data/mockTop';
 
 const Home = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Simulating authenticated user - in real app this would come from auth context
   const isAuthenticated = false; // Changed to false to show login page
@@ -20,6 +22,10 @@ const Home = () => {
 
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
+  };
+
+  const handleCreateAccount = () => {
+    navigate('/registration');
   };
 
   // If user is not authenticated, show the landing page
@@ -112,7 +118,7 @@ const Home = () => {
             <p className="text-xl mb-8 opacity-90">
               Junte-se a milhares de profissionais que já estão conectados através da nossa plataforma
             </p>
-            <Button onClick={openLoginModal} size="lg" className="bg-brand-success hover:bg-white hover:text-brand-primary text-white px-8 py-3 text-lg transition-all duration-200 transform hover:scale-105">
+            <Button onClick={handleCreateAccount} size="lg" className="bg-brand-success hover:bg-white hover:text-brand-primary text-white px-8 py-3 text-lg transition-all duration-200 transform hover:scale-105">
               Criar Conta Gratuita
             </Button>
           </div>
