@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Brain, Globe, Shield } from 'lucide-react';
 import LoginModal from '@/components/LoginModal';
 import PodiumCard from '@/components/PodiumCard';
 import MatchPerfectSection from '@/components/MatchPerfectSection';
@@ -45,52 +46,60 @@ const Home = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-brand-primary mb-4">
-              Por que escolher iGaming Connect?
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Facilitamos conexões estratégicas no mercado iGaming com tecnologia de ponta
-            </p>
-          </div>
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-brand-primary mb-4">
+                Por que escolher iGaming Connect?
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+                Facilitamos conexões estratégicas no mercado iGaming com tecnologia de ponta
+              </p>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-brand-success">
-              <CardHeader>
-                <div className="w-12 h-12 bg-brand-success/10 rounded-lg flex items-center justify-center mb-4">
-                  <div className="w-6 h-6 bg-brand-success rounded-full"></div>
-                </div>
-                <CardTitle className="text-brand-primary">Matchmaking Inteligente</CardTitle>
-                <CardDescription>
-                  Algoritmo avançado para conectar operadores e afiliados compatíveis
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="grid md:grid-cols-3 gap-10">
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white p-4">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-brand-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Brain className="w-8 h-8 text-brand-success" />
+                  </div>
+                  <CardTitle className="text-brand-primary text-xl mb-3">
+                    Matchmaking Inteligente
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 text-base leading-relaxed">
+                    Algoritmo avançado para conectar operadores e afiliados compatíveis baseado em critérios específicos e histórico de performance
+                  </CardDescription>
+                </CardHeader>
+              </Card>
 
-            <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-brand-accent">
-              <CardHeader>
-                <div className="w-12 h-12 bg-brand-accent/10 rounded-lg flex items-center justify-center mb-4">
-                  <div className="w-6 h-6 bg-brand-accent rounded-full"></div>
-                </div>
-                <CardTitle className="text-brand-primary">Rede Global</CardTitle>
-                <CardDescription>
-                  Acesso a uma rede mundial de parceiros verificados e confiáveis
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white p-4">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-brand-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Globe className="w-8 h-8 text-brand-accent" />
+                  </div>
+                  <CardTitle className="text-brand-primary text-xl mb-3">
+                    Rede Global
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 text-base leading-relaxed">
+                    Acesso a uma rede mundial de parceiros verificados e confiáveis em mais de 50 países ao redor do mundo
+                  </CardDescription>
+                </CardHeader>
+              </Card>
 
-            <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-brand-warning">
-              <CardHeader>
-                <div className="w-12 h-12 bg-brand-warning/10 rounded-lg flex items-center justify-center mb-4">
-                  <div className="w-6 h-6 bg-brand-warning rounded-full"></div>
-                </div>
-                <CardTitle className="text-brand-primary">Segurança Total</CardTitle>
-                <CardDescription>
-                  Plataforma segura com verificação rigorosa de todos os membros
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white p-4">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-brand-warning/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Shield className="w-8 h-8 text-brand-warning" />
+                  </div>
+                  <CardTitle className="text-brand-primary text-xl mb-3">
+                    Segurança Total
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 text-base leading-relaxed">
+                    Plataforma segura com verificação rigorosa de todos os membros e criptografia de ponta a ponta
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
           </div>
         </section>
 
