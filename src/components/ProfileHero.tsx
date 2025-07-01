@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
@@ -30,7 +31,7 @@ const ProfileHero = ({ profile, kpis, loading, onEdit }: ProfileHeroProps) => {
           </div>
           <div className="flex justify-center gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="w-22 h-22 bg-gray-300 rounded-full animate-pulse" />
+              <div key={i} className="w-24 h-24 bg-gray-300 rounded-full animate-pulse" />
             ))}
           </div>
         </div>
@@ -93,20 +94,20 @@ const ProfileHero = ({ profile, kpis, loading, onEdit }: ProfileHeroProps) => {
         </div>
 
         {/* KPI Badges */}
-        <div className="flex justify-center gap-4 overflow-x-auto pb-2">
+        <div className="flex justify-center gap-3 overflow-x-auto pb-2">
           {kpis.map((kpi, index) => (
             <div
               key={index}
-              className="flex-shrink-0 w-22 h-22 rounded-full bg-white border-2 border-gray-100 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+              className="flex-shrink-0 min-w-[80px] max-w-[120px] h-20 rounded-xl bg-white border-2 border-gray-100 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 px-2"
               style={{ borderColor: kpi.color + '20' }}
             >
               <div 
-                className="text-2xl font-bold mb-1"
+                className="text-lg font-bold mb-1 text-center truncate w-full"
                 style={{ color: kpi.color }}
               >
                 {kpi.value}
               </div>
-              <div className="text-xs text-gray-600 text-center leading-none">
+              <div className="text-xs text-gray-600 text-center leading-tight break-words">
                 {kpi.label}
               </div>
             </div>
