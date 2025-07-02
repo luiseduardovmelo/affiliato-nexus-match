@@ -28,7 +28,8 @@ const Lista = () => {
     chargedValue: '',
     desiredCommissionMethod: '',
     trafficTypes: [],
-    currentOperators: []
+    currentOperators: [],
+    promotionChannels: []
   });
 
   // Debounce search
@@ -109,7 +110,8 @@ const Lista = () => {
       chargedValue: '',
       desiredCommissionMethod: '',
       trafficTypes: [],
-      currentOperators: []
+      currentOperators: [],
+      promotionChannels: []
     });
   };
 
