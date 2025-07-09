@@ -6,7 +6,11 @@ import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ComissionModel, PaymentFrequency, PlatformType, TrafficType } from '@/data/mockListings';
+// Temporary types - will be replaced with Supabase types
+type ComissionModel = 'CPA' | 'REV' | 'Hibrido';
+type PaymentFrequency = 'semanal' | 'quinzenal' | 'mensal';
+type PlatformType = 'Cassino' | 'Apostas Esportivas' | 'Poker' | 'Bingo' | 'Completa';
+type TrafficType = string; // Will be properly typed later
 
 export interface FilterState {
   country: string;

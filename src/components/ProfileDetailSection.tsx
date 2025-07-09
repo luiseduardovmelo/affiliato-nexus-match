@@ -80,7 +80,7 @@ const ProfileDetailSection = ({ profile, hasRevealed }: ProfileDetailSectionProp
               </div>
             )}
             
-            {profile.commissionModels && profile.commissionModels.length > 0 && (
+            {profile.commissionModels && Array.isArray(profile.commissionModels) && profile.commissionModels.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <CreditCard className="w-4 h-4 text-gray-500" />
@@ -178,7 +178,7 @@ const ProfileDetailSection = ({ profile, hasRevealed }: ProfileDetailSectionProp
               </div>
             )}
             
-            {profile.currentOperators && profile.currentOperators.length > 0 && (
+            {profile.currentOperators && Array.isArray(profile.currentOperators) && profile.currentOperators.length > 0 && (
               <div>
                 <span className="font-medium block mb-2">Operadores Atuais:</span>
                 <div className="flex flex-wrap gap-2">
@@ -189,7 +189,7 @@ const ProfileDetailSection = ({ profile, hasRevealed }: ProfileDetailSectionProp
               </div>
             )}
             
-            {profile.previousOperators && profile.previousOperators.length > 0 && (
+            {profile.previousOperators && Array.isArray(profile.previousOperators) && profile.previousOperators.length > 0 && (
               <div>
                 <span className="font-medium block mb-2">Operadores Anteriores:</span>
                 <div className="flex flex-wrap gap-2">
@@ -200,7 +200,7 @@ const ProfileDetailSection = ({ profile, hasRevealed }: ProfileDetailSectionProp
               </div>
             )}
             
-            {profile.trafficTypes && profile.trafficTypes.length > 0 && (
+            {profile.trafficTypes && Array.isArray(profile.trafficTypes) && profile.trafficTypes.length > 0 && (
               <div>
                 <span className="font-medium block mb-2">Tipos de Tráfego:</span>
                 <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto">

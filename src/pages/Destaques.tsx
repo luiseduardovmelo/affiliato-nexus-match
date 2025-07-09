@@ -5,7 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import LoginModal from '@/components/LoginModal';
 import PodiumCard from '@/components/PodiumCard';
 import MatchPerfectSection from '@/components/MatchPerfectSection';
-import { mockTopOperadores, mockTopAfiliados } from '@/data/mockTop';
+// Temporary types - will be replaced with Supabase types
+interface TopItem {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  position: number;
+}
+
+// Temporary empty arrays - will be replaced with Supabase data
+const mockTopOperadores: TopItem[] = [];
+const mockTopAfiliados: TopItem[] = [];
 
 const Destaques = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -129,24 +140,26 @@ const Destaques = () => {
           </p>
         </section>
 
-        {/* Podiums Section */}
-        <section className="max-w-7xl mx-auto mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <PodiumCard
-              title="Top Operadores"
-              data={mockTopOperadores}
-              linkType="operadores"
-            />
-            <PodiumCard
-              title="Top Afiliados"
-              data={mockTopAfiliados}
-              linkType="afiliados"
-            />
-          </div>
-        </section>
+        {/* Podiums Section - temporarily hidden until Supabase data is available */}
+        {mockTopOperadores.length > 0 && mockTopAfiliados.length > 0 && (
+          <section className="max-w-7xl mx-auto mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <PodiumCard
+                title="Top Operadores"
+                data={mockTopOperadores}
+                linkType="operadores"
+              />
+              <PodiumCard
+                title="Top Afiliados"
+                data={mockTopAfiliados}
+                linkType="afiliados"
+              />
+            </div>
+          </section>
+        )}
 
-        {/* Match Perfeito Section */}
-        <MatchPerfectSection />
+        {/* Match Perfeito Section - temporarily hidden until Supabase data is available */}
+        {/* <MatchPerfectSection /> */}
       </div>
     </div>
   );

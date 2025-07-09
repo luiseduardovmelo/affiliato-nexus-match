@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,19 +10,39 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ComissionModel, PaymentFrequency, PlatformType, TrafficType } from '@/data/mockListings';
+// Temporary types - will be replaced with Supabase types
+type ComissionModel = 'CPA' | 'REV' | 'Hibrido';
+type PaymentFrequency = 'semanal' | 'quinzenal' | 'mensal';
+type PlatformType = 'Cassino' | 'Apostas Esportivas' | 'Poker' | 'Bingo' | 'Completa';
+type TrafficType = string; // Will be properly typed later
 
 interface ProfileEditFormProps {
   profileType: 'operador' | 'afiliado';
   onSave: (data: any) => void;
   onCancel: () => void;
   initialData?: any;
+  isSaving?: boolean;
 }
 
-const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: ProfileEditFormProps) => {
+const ProfileEditForm = ({ profileType, onSave, onCancel, initialData, isSaving = false }: ProfileEditFormProps) => {
+  console.log('📝 ProfileEditForm initialized with:', {
+    profileType,
+    initialData
+  });
+
   const form = useForm({
     defaultValues: initialData || {}
   });
+
+  // Update form when initialData changes
+  React.useEffect(() => {
+    if (initialData) {
+      console.log('🔄 ProfileEditForm: Resetting form with new data:', initialData);
+      console.log('🔄 Current form values before reset:', form.getValues());
+      form.reset(initialData);
+      console.log('🔄 Form values after reset:', form.getValues());
+    }
+  }, [initialData, form]);
 
   const countries = ['Brasil', 'Portugal', 'Reino Unido', 'Espanha', 'Estados Unidos'];
   const languages = ['Português', 'Inglês', 'Espanhol'];
@@ -56,14 +77,28 @@ const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: Profile
     'Tráfego comprado de redes (revenda de tráfego de outros afiliados)'
   ];
 
+  const handleFormSubmit = (data: any) => {
+    console.log('📋 ProfileEditForm: Form submitted with data:', data);
+    console.log('📋 Current form values:', form.getValues());
+    onSave(data);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSave)} className="space-y-6">
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
-            <TabsTrigger value="business">Informações Comerciais</TabsTrigger>
-            <TabsTrigger value="contact">Contato</TabsTrigger>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 min-h-0 pb-0">
+        <Tabs defaultValue="basic" className="w-full min-h-0">
+          <TabsList className="grid w-full grid-cols-3 h-auto flex-shrink-0">
+            <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 py-2">
+              <span className="hidden sm:inline">Informações Básicas</span>
+              <span className="sm:hidden">Básico</span>
+            </TabsTrigger>
+            <TabsTrigger value="business" className="text-xs sm:text-sm px-2 py-2">
+              <span className="hidden sm:inline">Informações Comerciais</span>
+              <span className="sm:hidden">Comercial</span>
+            </TabsTrigger>
+            <TabsTrigger value="contact" className="text-xs sm:text-sm px-2 py-2">
+              Contato
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">
@@ -153,11 +188,11 @@ const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: Profile
 
           <TabsContent value="business" className="space-y-4">
             {profileType === 'operador' ? (
-              <Card>
+              <Card className="mb-0">
                 <CardHeader>
                   <CardTitle>Informações do Operador</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pb-6">
                   <FormField
                     control={form.control}
                     name="monthlyTrafficVolume"
@@ -308,11 +343,11 @@ const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: Profile
                 </CardContent>
               </Card>
             ) : (
-              <Card>
+              <Card className="mb-0">
                 <CardHeader>
                   <CardTitle>Informações do Afiliado</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pb-6">
                   <FormField
                     control={form.control}
                     name="chargedValue"
@@ -398,7 +433,7 @@ const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: Profile
                     render={() => (
                       <FormItem>
                         <FormLabel>Tipos de Tráfego</FormLabel>
-                        <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto border rounded p-3">
+                        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-3">
                           {trafficTypes.map((type) => (
                             <FormField
                               key={type}
@@ -502,12 +537,12 @@ const ProfileEditForm = ({ profileType, onSave, onCancel, initialData }: Profile
           </TabsContent>
         </Tabs>
 
-        <div className="flex gap-4 justify-end">
+        <div className="flex gap-4 justify-end mt-6 mb-0">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="submit">
-            Salvar Perfil
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? 'Salvando...' : 'Salvar Perfil'}
           </Button>
         </div>
       </form>

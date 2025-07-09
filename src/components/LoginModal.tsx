@@ -4,6 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -18,6 +21,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     confirmPassword: '',
     name: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,11 +33,63 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui você implementaria a lógica de login/cadastro
-    console.log('Form submitted:', formData, isLoginMode ? 'login' : 'register');
-    onClose();
+    setIsLoading(true);
+
+    try {
+      if (isLoginMode) {
+        console.log('🔑 Attempting login...', { email: formData.email });
+        const { error } = await login(formData.email, formData.password);
+        
+        if (error) {
+          console.error('❌ Login error:', error);
+          let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
+          
+          if (error.message?.includes('Invalid login credentials')) {
+            errorMessage = 'Email ou senha incorretos.';
+          } else if (error.message?.includes('Email not confirmed')) {
+            errorMessage = 'Confirme seu email antes de fazer login.';
+          }
+          
+          toast({
+            title: "Erro no login",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        } else {
+          console.log('✅ Login successful');
+          toast({
+            title: "Login realizado!",
+            description: "Bem-vindo de volta!",
+          });
+          onClose();
+          
+          // Redirecionar para a página de parceiros (lista)
+          setTimeout(() => {
+            navigate('/lista');
+          }, 1000);
+        }
+      } else {
+        // Para cadastro, redirecionar para a página de registro completa
+        console.log('📝 Redirecting to registration...');
+        toast({
+          title: "Cadastro completo",
+          description: "Use o formulário de cadastro completo para criar sua conta.",
+        });
+        navigate('/registration');
+        onClose();
+      }
+    } catch (error) {
+      console.error('❌ Unexpected error:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleMode = () => {
@@ -128,9 +187,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
           <Button
             type="submit"
-            className="w-full bg-brand-success hover:bg-brand-accent text-white py-3 text-lg font-semibold"
+            disabled={isLoading}
+            className="w-full bg-brand-success hover:bg-brand-accent text-white py-3 text-lg font-semibold disabled:opacity-50"
           >
-            {isLoginMode ? 'Entrar' : 'Criar Conta'}
+            {isLoading ? 'Aguarde...' : (isLoginMode ? 'Entrar' : 'Criar Conta')}
           </Button>
         </form>
 

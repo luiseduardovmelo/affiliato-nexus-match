@@ -1,5 +1,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useUsers } from '@/hooks/useUsers';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,9 +11,40 @@ import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import ListingCard from '@/components/ListingCard';
 import FilterDrawer, { FilterState } from '@/components/FilterDrawer';
-import { mockOperadores, mockAfiliados, Listing } from '@/data/mockListings';
+import ErrorBoundary from '@/components/ErrorBoundary';
+// Temporary types - will be replaced with Supabase types
+type Listing = {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  country: string;
+  language: string;
+  description: string;
+  type: 'operador' | 'afiliado';
+  monthlyTrafficVolume?: string;
+  commissionModels?: string[];
+  paymentFrequency?: string;
+  acceptsRetargeting?: boolean;
+  installsPostback?: boolean;
+  chargedValue?: string;
+  desiredCommissionMethod?: string;
+  promotionChannels?: string[];
+  currentOperators?: string[];
+  previousOperators?: string[];
+  basicInfo?: string;
+  whiteLabel?: string;
+  specialties: string[];
+  platformType?: string;
+  trafficTypes?: string[];
+};
+
+// Temporary empty arrays - will be replaced with Supabase data
+const mockOperadores: Listing[] = [];
+const mockAfiliados: Listing[] = [];
 
 const Lista = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'operadores' | 'afiliados'>('operadores');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -41,12 +76,87 @@ const Lista = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Get current data based on active tab
-  const currentData = activeTab === 'operadores' ? mockOperadores : mockAfiliados;
+  // Get current data based on active tab from database
+  const userRole = activeTab === 'operadores' ? 'operator' : 'affiliate';
+  const { data: currentData = [], isLoading, error } = useUsers(userRole);
+  
+  // Get all ratings for the current users
+  const { data: allRatings = [] } = useQuery({
+    queryKey: ['allRatings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('target_id, rating');
+      
+      if (error) {
+        console.error('Error fetching ratings:', error);
+        return [];
+      }
+      
+      // Group ratings by target_id and calculate averages
+      const ratingsMap = new Map();
+      data.forEach(review => {
+        if (!ratingsMap.has(review.target_id)) {
+          ratingsMap.set(review.target_id, []);
+        }
+        ratingsMap.get(review.target_id).push(review.rating);
+      });
+      
+      // Calculate averages
+      const averages = new Map();
+      ratingsMap.forEach((ratings, targetId) => {
+        const average = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+        averages.set(targetId, average);
+      });
+      
+      return averages;
+    },
+    enabled: currentData.length > 0,
+  });
+  
+  // Convert database data to listing format
+  const listingData = useMemo(() => {
+    if (!currentData) return [];
+    
+    return currentData.map((item: any) => ({
+      id: item.user_id,
+      name: item.users?.display_name || item.users?.email || 'Usuário',
+      avatar: '/placeholder.svg',
+      rating: allRatings.get(item.user_id) || 0,
+      country: item.users?.country || 'Brasil',
+      language: item.users?.language || 'Português',
+      description: item.description || `${activeTab === 'operadores' ? 'Operador' : 'Afiliado'} verificado`,
+      type: activeTab === 'operadores' ? 'operador' : 'afiliado',
+      specialties: activeTab === 'operadores' 
+        ? (Array.isArray(item.commission_models) ? item.commission_models : []).slice(0, 3)
+        : (Array.isArray(item.traffic_sources) ? item.traffic_sources : []).slice(0, 3),
+      // Operator specific fields
+      monthlyTrafficVolume: item.monthly_volume,
+      commissionModels: item.commission_models ? 
+        (Array.isArray(item.commission_models) ? item.commission_models : []) : [],
+      paymentFrequency: item.payment_schedule,
+      acceptsRetargeting: item.accepts_retargeting,
+      installsPostback: item.installs_postback,
+      platformType: item.platform_type,
+      whiteLabel: item.white_label,
+      // Affiliate specific fields
+      chargedValue: item.charged_value,
+      desiredCommissionMethod: item.commission_model,
+      promotionChannels: item.promotion_channels ? 
+        (typeof item.promotion_channels === 'string' ? item.promotion_channels.split(',').map(ch => ch.trim()).filter(ch => ch.length > 0) : item.promotion_channels) : [],
+      currentOperators: item.current_operators ? 
+        (typeof item.current_operators === 'string' ? item.current_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : item.current_operators) : [],
+      previousOperators: item.previous_operators ? 
+        (typeof item.previous_operators === 'string' ? item.previous_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : item.previous_operators) : [],
+      basicInfo: item.basic_info,
+      trafficTypes: item.traffic_sources ? 
+        (Array.isArray(item.traffic_sources) ? item.traffic_sources : []) : [],
+    }));
+  }, [currentData, activeTab, allRatings]);
 
   // Filter and search data
   const filteredData = useMemo(() => {
-    return currentData.filter((item: Listing) => {
+    return listingData.filter((item: Listing) => {
       const matchesSearch = item.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                            item.description.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesCountry = !filters.country || item.country === filters.country;
@@ -56,7 +166,24 @@ const Lista = () => {
       // Filtros específicos para operadores
       if (activeTab === 'operadores') {
         const matchesCommissionModels = filters.commissionModels.length === 0 || 
-          (item.commissionModels && filters.commissionModels.some(model => item.commissionModels?.includes(model)));
+          (Array.isArray(item.commissionModels) && item.commissionModels.length > 0 && 
+           filters.commissionModels.some(model => {
+             const normalizedModel = model.toLowerCase();
+             return item.commissionModels.some(itemModel => {
+               const normalizedItemModel = itemModel.toLowerCase();
+               // Exact match
+               if (normalizedItemModel === normalizedModel) return true;
+               // Partial match
+               if (normalizedItemModel.includes(normalizedModel) || normalizedModel.includes(normalizedItemModel)) return true;
+               // Special cases for common variations
+               if (normalizedModel === 'rev' && (normalizedItemModel.includes('revshare') || normalizedItemModel.includes('revenue'))) return true;
+               if (normalizedModel === 'cpa' && normalizedItemModel.includes('cost per action')) return true;
+               if (normalizedModel === 'hibrido' && (normalizedItemModel.includes('hybrid') || normalizedItemModel.includes('híbrido'))) return true;
+               return false;
+             });
+           }));
+        
+        
         const matchesPaymentFreq = !filters.paymentFrequency || item.paymentFrequency === filters.paymentFrequency;
         const matchesPlatformType = !filters.platformType || item.platformType === filters.platformType;
         const matchesRetargeting = filters.acceptsRetargeting === null || item.acceptsRetargeting === filters.acceptsRetargeting;
@@ -79,7 +206,7 @@ const Lista = () => {
 
       return matchesSearch && matchesCountry && matchesLanguage && matchesRating;
     });
-  }, [currentData, debouncedSearch, filters, activeTab]);
+  }, [listingData, debouncedSearch, filters, activeTab]);
 
   // Visible data with pagination
   const visibleData = filteredData.slice(0, visibleCount);
@@ -193,12 +320,12 @@ const Lista = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className="shrink-0 relative px-4"
+                className="shrink-0 relative px-4 flex items-center gap-2"
               >
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="h-4 w-4" />
                 Filtros
                 {activeFilters.length > 0 && (
-                  <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-brand-accent text-white">
+                  <Badge className="h-5 w-5 rounded-full p-0 text-xs bg-brand-accent text-white flex items-center justify-center">
                     {activeFilters.length}
                   </Badge>
                 )}
@@ -232,18 +359,43 @@ const Lista = () => {
 
         {/* Results Count */}
         <div className="text-sm text-gray-600">
-          {filteredData.length} {activeTab} encontrados
+          {isLoading ? 'Carregando...' : `${filteredData.length} ${activeTab} encontrados`}
         </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg mb-4">
+              Erro ao carregar dados: {error.message}
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-gray-200 h-64 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Listings Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {visibleData.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+        {!isLoading && !error && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {visibleData.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredData.length === 0 && (
+        {!isLoading && !error && filteredData.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg mb-4">
               Nenhum resultado encontrado
@@ -255,7 +407,7 @@ const Lista = () => {
         )}
 
         {/* Load More */}
-        {hasMore && (
+        {!isLoading && !error && hasMore && (
           <div className="text-center">
             <Button 
               variant="outline" 

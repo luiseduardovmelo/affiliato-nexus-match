@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useRegistration } from '@/hooks/useRegistration';
 import UserTypeSelection from '@/components/registration/UserTypeSelection';
 import BasicDataForm from '@/components/registration/BasicDataForm';
 import AfiliadoForm from '@/components/registration/AfiliadoForm';
@@ -12,9 +11,7 @@ import { RegistrationData, UserType, BasicUserData, AfiliadoData, OperadorData }
 
 const Registration = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { isLoading, register } = useRegistration();
 
   const [registrationData, setRegistrationData] = useState<RegistrationData>({
     userType: null as any,
@@ -84,32 +81,12 @@ const Registration = () => {
   };
 
   const handleSubmit = async () => {
-    setIsLoading(true);
+    const result = await register(registrationData);
     
-    try {
-      // Here you would normally call your registration API
-      // For now, we'll simulate the process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao iGaming Connect. Redirecionando...",
-      });
-
-      // Redirect to main app after successful registration
-      setTimeout(() => {
-        navigate('/');
-      }, 1500);
-      
-    } catch (error) {
-      toast({
-        title: "Erro ao criar conta",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (!result.success) {
+      console.error('Registration failed:', result.error);
     }
+    // Success is handled by the hook (toast + navigation)
   };
 
   const nextStep = () => {

@@ -4,7 +4,32 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-import { Listing } from '@/data/mockListings';
+// Temporary types - will be replaced with Supabase types
+type Listing = {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  country: string;
+  language: string;
+  description: string;
+  type: 'operador' | 'afiliado';
+  monthlyTrafficVolume?: string;
+  commissionModels?: string[];
+  paymentFrequency?: string;
+  acceptsRetargeting?: boolean;
+  installsPostback?: boolean;
+  chargedValue?: string;
+  desiredCommissionMethod?: string;
+  promotionChannels?: string[];
+  currentOperators?: string[];
+  previousOperators?: string[];
+  basicInfo?: string;
+  whiteLabel?: string;
+  specialties: string[];
+  platformType?: string;
+  trafficTypes?: string[];
+};
 import { useFavorites } from '@/hooks/useFavorites';
 import { useRevealState } from '@/hooks/useRevealState';
 
@@ -67,9 +92,9 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                   />
                 </Button>
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-brand-warning text-brand-warning" />
+                  <Star className={`w-4 h-4 ${listing.rating > 0 ? 'fill-brand-warning text-brand-warning' : 'text-gray-300'}`} />
                   <span className="text-sm font-medium text-gray-700">
-                    {listing.rating.toFixed(1)}
+                    {listing.rating > 0 ? listing.rating.toFixed(1) : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -105,7 +130,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                     <span>{listing.monthlyTrafficVolume}</span>
                   </div>
                 )}
-                {listing.commissionModels && listing.commissionModels.length > 0 && (
+                {listing.commissionModels && Array.isArray(listing.commissionModels) && listing.commissionModels.length > 0 && (
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <CreditCard className="w-3 h-3" />
                     <span>{listing.commissionModels.join(', ')}</span>
@@ -156,7 +181,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                     <span>Prefere {listing.desiredCommissionMethod}</span>
                   </div>
                 )}
-                {listing.promotionChannels && listing.promotionChannels.length > 0 && (
+                {listing.promotionChannels && Array.isArray(listing.promotionChannels) && listing.promotionChannels.length > 0 && (
                   <div className="space-y-1">
                     <span className="text-xs font-medium text-gray-700">Canais:</span>
                     <div className="flex flex-wrap gap-1">
@@ -172,7 +197,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                     </div>
                   </div>
                 )}
-                {listing.currentOperators && listing.currentOperators.length > 0 && (
+                {listing.currentOperators && Array.isArray(listing.currentOperators) && listing.currentOperators.length > 0 && (
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Trabalhando com:</span> {listing.currentOperators.slice(0, 2).join(', ')}
                     {listing.currentOperators.length > 2 && ' +outros'}

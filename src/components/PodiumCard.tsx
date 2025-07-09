@@ -3,7 +3,14 @@ import { Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-import { TopItem } from '@/data/mockTop';
+// Temporary types - will be replaced with Supabase types
+interface TopItem {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  position: number;
+}
 
 interface PodiumCardProps {
   title: string;

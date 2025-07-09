@@ -36,13 +36,13 @@ const AboutSection = ({ profile }: AboutSectionProps) => {
         
         <div>
           <h4 className="font-medium text-brand-primary mb-2">Idiomas</h4>
-          <p className="text-gray-600">{profile.languages.join(', ')}</p>
+          <p className="text-gray-600">{Array.isArray(profile.languages) ? profile.languages.join(', ') : profile.languages}</p>
         </div>
         
         <div>
           <h4 className="font-medium text-brand-primary mb-2">Especialidades</h4>
           <div className="flex flex-wrap gap-2">
-            {profile.specialties.map((specialty, index) => (
+            {Array.isArray(profile.specialties) && profile.specialties.map((specialty, index) => (
               <span 
                 key={index}
                 className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"

@@ -1,25 +1,31 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useReviewStats, useSubmitReview } from '@/hooks/useReviews';
 
 interface RatingSystemProps {
   profileId: string;
-  currentRating?: number;
-  totalRatings?: number;
-  userHasRated?: boolean;
 }
 
-const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasRated = false }: RatingSystemProps) => {
+const RatingSystem = ({ profileId }: RatingSystemProps) => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  
+  const { data: reviewStats, isLoading } = useReviewStats(profileId);
+  const submitReview = useSubmitReview();
+
+  // Carregar dados da avaliação existente do usuário
+  useEffect(() => {
+    if (reviewStats?.userReview) {
+      setSelectedRating(reviewStats.userReview.rating);
+      setComment(reviewStats.userReview.comment || '');
+    }
+  }, [reviewStats]);
 
   const handleStarClick = (rating: number) => {
     setSelectedRating(rating);
@@ -31,27 +37,24 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
 
   const handleSubmit = async () => {
     if (selectedRating === 0) {
-      toast({
-        title: "Erro",
-        description: "Por favor, selecione uma avaliação.",
-        variant: "destructive",
-      });
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Simular envio da avaliação
-    setTimeout(() => {
-      toast({
-        title: "Avaliação enviada!",
-        description: "Sua avaliação foi registrada com sucesso.",
+    try {
+      await submitReview.mutateAsync({
+        targetId: profileId,
+        rating: selectedRating,
+        comment: comment.trim() || undefined,
       });
-      setShowForm(false);
-      setSelectedRating(0);
-      setComment('');
-      setIsSubmitting(false);
-    }, 1000);
+      
+      // Limpar apenas se for uma nova avaliação
+      if (!reviewStats?.userHasRated) {
+        setSelectedRating(0);
+        setComment('');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
   };
 
   const renderStars = (rating: number, interactive = false) => {
@@ -64,10 +67,16 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
       return (
         <Star
           key={index}
-          className={`w-5 h-5 cursor-pointer transition-colors ${
+          className={`w-6 h-6 transition-all duration-200 ${
+            interactive 
+              ? 'cursor-pointer hover:scale-110' 
+              : 'cursor-default'
+          } ${
             isFilled 
               ? 'fill-yellow-400 text-yellow-400' 
-              : 'text-gray-300 hover:text-yellow-400'
+              : interactive 
+                ? 'text-gray-300 hover:text-yellow-200' 
+                : 'text-gray-300'
           }`}
           onClick={interactive ? () => handleStarClick(starValue) : undefined}
           onMouseEnter={interactive ? () => handleStarHover(starValue) : undefined}
@@ -77,7 +86,7 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
     });
   };
 
-  if (userHasRated && !showForm) {
+  if (isLoading) {
     return (
       <Card className="mb-6">
         <CardHeader>
@@ -87,26 +96,24 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex items-center gap-1">
-              {renderStars(currentRating)}
+          <div className="animate-pulse space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <div key={i} className="w-6 h-6 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
             </div>
-            <span className="text-lg font-semibold">{currentRating.toFixed(1)}</span>
-            <span className="text-gray-500">({totalRatings} avaliações)</span>
           </div>
-          <p className="text-sm text-gray-600 mb-4">Você já avaliou este perfil.</p>
-          <Button 
-            variant="outline" 
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Atualizar avaliação
-          </Button>
         </CardContent>
       </Card>
     );
   }
+
+  const currentRating = reviewStats?.averageRating || 0;
+  const totalRatings = reviewStats?.totalReviews || 0;
+  const userHasRated = reviewStats?.userHasRated || false;
 
   return (
     <Card className="mb-6">
@@ -121,31 +128,37 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
           <div className="flex items-center gap-1">
             {renderStars(currentRating)}
           </div>
-          <span className="text-lg font-semibold">{currentRating.toFixed(1)}</span>
-          <span className="text-gray-500">({totalRatings} avaliações)</span>
+          {totalRatings > 0 ? (
+            <>
+              <span className="text-lg font-semibold">{currentRating.toFixed(1)}</span>
+              <span className="text-gray-500">({totalRatings} avaliações)</span>
+            </>
+          ) : (
+            <span className="text-gray-500">Nenhuma avaliação ainda</span>
+          )}
         </div>
 
-        {!showForm ? (
-          <Button 
-            onClick={() => setShowForm(true)}
-            className="bg-brand-primary hover:bg-brand-accent text-white"
-          >
-            Avaliar perfil
-          </Button>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Sua avaliação:</label>
-              <div className="flex items-center gap-1 mb-4">
-                {renderStars(selectedRating, true)}
-                {selectedRating > 0 && (
-                  <span className="ml-2 text-sm text-gray-600">
-                    {selectedRating} de 5 estrelas
-                  </span>
-                )}
-              </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {userHasRated ? 'Sua avaliação atual:' : 'Sua avaliação:'}
+              {!userHasRated && (
+                <span className="text-xs text-gray-500 font-normal ml-2">
+                  (clique nas estrelas para avaliar)
+                </span>
+              )}
+            </label>
+            <div className="flex items-center gap-1 mb-4">
+              {renderStars(selectedRating || hoverRating, true)}
+              {(selectedRating > 0 || hoverRating > 0) && (
+                <span className="ml-2 text-sm text-gray-600">
+                  {selectedRating || hoverRating} de 5 estrelas
+                </span>
+              )}
             </div>
+          </div>
 
+          {selectedRating > 0 && (
             <div>
               <label className="block text-sm font-medium mb-2">
                 Comentário (opcional):
@@ -157,29 +170,37 @@ const RatingSystem = ({ profileId, currentRating = 0, totalRatings = 0, userHasR
                 className="min-h-[100px]"
               />
             </div>
+          )}
 
+          {selectedRating > 0 && (
             <div className="flex gap-2">
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={submitReview.isPending}
                 className="bg-brand-success hover:bg-brand-accent text-white"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar avaliação'}
+                {submitReview.isPending ? 'Enviando...' : userHasRated ? 'Atualizar avaliação' : 'Enviar avaliação'}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
-                  setShowForm(false);
-                  setSelectedRating(0);
-                  setComment('');
+                  if (userHasRated && reviewStats?.userReview) {
+                    // Voltar para a avaliação original
+                    setSelectedRating(reviewStats.userReview.rating);
+                    setComment(reviewStats.userReview.comment || '');
+                  } else {
+                    // Limpar tudo
+                    setSelectedRating(0);
+                    setComment('');
+                  }
                 }}
-                disabled={isSubmitting}
+                disabled={submitReview.isPending}
               >
                 Cancelar
               </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );

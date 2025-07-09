@@ -1,7 +1,6 @@
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Edit, Settings, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 interface ProfileCardLeftProps {
   profile: {
@@ -61,22 +60,7 @@ const ProfileCardLeft = ({ profile, loading }: ProfileCardLeftProps) => {
           <p className="text-gray-600">{profile.location}</p>
         </div>
 
-        {/* Links Rápidos - apenas no mobile */}
-        <div className="space-y-3 md:hidden">
-          <Button 
-            className="w-full bg-brand-success hover:bg-brand-accent text-white justify-start"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Editar Perfil
-          </Button>
-          <Button 
-            variant="outline" 
-            className="w-full border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white justify-start"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Configurações
-          </Button>
-        </div>
+{/* Links Rápidos removidos - funcionalidade implementada via ProfileHero */}
       </div>
     </div>
   );

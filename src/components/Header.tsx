@@ -3,21 +3,40 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Users, Star, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import CreditBalance from '@/components/CreditBalance';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
+  const { toast } = useToast();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleLogout = () => {
-    // Clear any stored auth data
-    localStorage.clear();
-    // Navigate to home page
-    navigate('/home');
+  const handleLogout = async () => {
+    console.log('🚪 Header: Starting logout process...');
+    const { error } = await logout();
+    
+    if (error) {
+      console.error('❌ Logout error:', error);
+      toast({
+        title: "Erro ao sair",
+        description: "Não foi possível fazer logout. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
+      console.log('✅ Logout successful');
+      toast({
+        title: "Logout realizado!",
+        description: "Você foi desconectado com sucesso.",
+      });
+      navigate('/home');
+    }
   };
 
   const isActivePath = (path: string) => {
@@ -77,6 +96,10 @@ const Header = () => {
               <User className="w-4 h-4" />
               <span>Perfil</span>
             </Link>
+
+            <div className="px-3 py-2">
+              <CreditBalance compact />
+            </div>
 
             <Button
               variant="ghost"
@@ -141,6 +164,10 @@ const Header = () => {
                 <User className="w-4 h-4" />
                 <span>Perfil</span>
               </Link>
+
+              <div className="px-3 py-2">
+                <CreditBalance compact />
+              </div>
 
               <Button
                 variant="ghost"

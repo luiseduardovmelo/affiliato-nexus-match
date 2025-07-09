@@ -5,11 +5,22 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { mockMatchData, MatchItem } from '@/data/mockMatches';
+// Temporary types - will be replaced with Supabase types
+interface MatchItem {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  matchScore: number;
+}
+
+// Temporary empty array - will be replaced with Supabase data
+const mockMatchData: MatchItem[] = [];
 
 const MatchPerfectSection = () => {
   const validMatches = mockMatchData.filter(match => match.matchScore >= 0.8);
 
+  // Temporarily return null since we have no data
   if (validMatches.length === 0) {
     return null;
   }
