@@ -30,7 +30,7 @@ type Listing = {
   platformType?: string;
   trafficTypes?: string[];
 };
-import { useFavorites } from '@/hooks/useFavorites';
+import { useIsFavorite, useToggleFavorite } from '@/hooks/useFavorites';
 import { useRevealState } from '@/hooks/useRevealState';
 
 interface ListingCardProps {
@@ -38,13 +38,14 @@ interface ListingCardProps {
 }
 
 const ListingCard = ({ listing }: ListingCardProps) => {
-  const { toggleFavorite, isFavorite } = useFavorites();
-  const { hasRevealed } = useRevealState(listing.id);
+  const { data: isFavorite = false } = useIsFavorite(listing.id);
+  const toggleFavorite = useToggleFavorite();
+  const { hasRevealed } = useRevealState(listing.id, listing.name);
   
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleFavorite(listing.id);
+    toggleFavorite.mutate({ targetId: listing.id, isCurrentlyFavorite: isFavorite });
   };
 
   // Função para obter ícone do canal
@@ -85,7 +86,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
                 >
                   <Heart 
                     className={`w-4 h-4 ${
-                      isFavorite(listing.id) 
+                      isFavorite 
                         ? 'fill-red-500 text-red-500' 
                         : 'text-gray-400 hover:text-red-500'
                     }`} 

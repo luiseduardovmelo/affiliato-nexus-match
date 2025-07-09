@@ -32,14 +32,31 @@ export const useAuth = (): AuthHook => {
   });
 
   useEffect(() => {
+    let mounted = true;
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 useAuth: Initial session check', { 
-        hasSession: !!session, 
-        user: session?.user?.email || 'none' 
-      });
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Auth error:', error);
+        setAuthState({
+          user: null,
+          loading: false,
+        });
+        return;
+      }
+      
       setAuthState({
         user: session?.user ?? null,
+        loading: false,
+      });
+    }).catch((error) => {
+      if (!mounted) return;
+      
+      console.error('Critical auth error:', error);
+      setAuthState({
+        user: null,
         loading: false,
       });
     });
@@ -47,11 +64,8 @@ export const useAuth = (): AuthHook => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 useAuth: Auth state changed', { 
-          event, 
-          hasSession: !!session, 
-          user: session?.user?.email || 'none' 
-        });
+        if (!mounted) return;
+        
         setAuthState({
           user: session?.user ?? null,
           loading: false,
@@ -59,12 +73,15 @@ export const useAuth = (): AuthHook => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('🔑 useAuth: Starting login process...', { email });
+      // Starting login process
       setAuthState(prev => ({ ...prev, loading: true }));
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -73,14 +90,12 @@ export const useAuth = (): AuthHook => {
       });
 
       if (error) {
-        console.error('❌ useAuth: Login error:', error);
+        console.error('Login error:', error);
         throw error;
       }
-
-      console.log('✅ useAuth: Login successful', { user: data.user?.email, id: data.user?.id });
       return { error: null };
     } catch (error) {
-      console.error('❌ useAuth: Login error:', error);
+      console.error('Login error:', error);
       return { error };
     } finally {
       setAuthState(prev => ({ ...prev, loading: false }));

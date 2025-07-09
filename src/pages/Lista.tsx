@@ -81,7 +81,7 @@ const Lista = () => {
   const { data: currentData = [], isLoading, error } = useUsers(userRole);
   
   // Get all ratings for the current users
-  const { data: allRatings = [] } = useQuery({
+  const { data: allRatings = new Map() } = useQuery({
     queryKey: ['allRatings'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -122,7 +122,7 @@ const Lista = () => {
       id: item.user_id,
       name: item.users?.display_name || item.users?.email || 'Usuário',
       avatar: '/placeholder.svg',
-      rating: allRatings.get(item.user_id) || 0,
+      rating: (allRatings instanceof Map) ? (allRatings.get(item.user_id) || 0) : 0,
       country: item.users?.country || 'Brasil',
       language: item.users?.language || 'Português',
       description: item.description || `${activeTab === 'operadores' ? 'Operador' : 'Afiliado'} verificado`,

@@ -5,7 +5,7 @@ import { Menu, X, Users, Star, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import CreditBalance from '@/components/CreditBalance';
+// import CreditBalance from '@/components/CreditBalance';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,7 +98,7 @@ const Header = () => {
             </Link>
 
             <div className="px-3 py-2">
-              <CreditBalance compact />
+              {/* <CreditBalance compact /> */}
             </div>
 
             <Button
@@ -166,7 +166,7 @@ const Header = () => {
               </Link>
 
               <div className="px-3 py-2">
-                <CreditBalance compact />
+                {/* <CreditBalance compact /> */}
               </div>
 
               <Button

@@ -16,9 +16,10 @@ interface PodiumCardProps {
   title: string;
   data: TopItem[];
   linkType: 'operadores' | 'afiliados';
+  isLoading?: boolean;
 }
 
-const PodiumCard = ({ title, data, linkType }: PodiumCardProps) => {
+const PodiumCard = ({ title, data, linkType, isLoading = false }: PodiumCardProps) => {
   const getMedalColor = (position: number) => {
     switch (position) {
       case 1: return 'bg-brand-warning text-white';
@@ -27,6 +28,47 @@ const PodiumCard = ({ title, data, linkType }: PodiumCardProps) => {
       default: return 'bg-gray-300 text-gray-700';
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="border border-brand-accent/20 rounded-lg bg-white shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-brand-primary">
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 animate-pulse">
+              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <Card className="border border-brand-accent/20 rounded-lg bg-white shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-brand-primary">
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center py-8">
+            Nenhum usuário encontrado para o ranking
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border border-brand-accent/20 rounded-lg bg-white shadow-sm">

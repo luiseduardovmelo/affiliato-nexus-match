@@ -58,11 +58,11 @@ const RevealModal = ({ isOpen, onClose, onConfirm, contact }: RevealModalProps) 
         {!isConfirmed ? (
           <div className="py-4">
             <p className="text-gray-600 text-center">
-              Isto consumirá <span className="font-semibold text-brand-primary">1 crédito</span> do seu saldo.
+              Deseja revelar as informações de contato deste parceiro?
             </p>
-            <p className="text-sm text-gray-500 text-center mt-2">
+            {/* <p className="text-sm text-gray-500 text-center mt-2">
               Você possui 5 créditos disponíveis.
-            </p>
+            </p> */}
           </div>
         ) : (
           <div className="py-4 space-y-4">

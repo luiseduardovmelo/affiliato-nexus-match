@@ -4,25 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoginModal from '@/components/LoginModal';
 import PodiumCard from '@/components/PodiumCard';
-import MatchPerfectSection from '@/components/MatchPerfectSection';
-// Temporary types - will be replaced with Supabase types
-interface TopItem {
-  id: string;
-  name: string;
-  avatar: string;
-  rating: number;
-  position: number;
-}
-
-// Temporary empty arrays - will be replaced with Supabase data
-const mockTopOperadores: TopItem[] = [];
-const mockTopAfiliados: TopItem[] = [];
+import FavoritesList from '@/components/FavoritesList';
+import { useTopUsers } from '@/hooks/useTopUsers';
+import { useFavorites, useToggleFavorite } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 
 const Destaques = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { user } = useAuth();
   
-  // Simulating authenticated user - in real app this would come from auth context
-  const isAuthenticated = true;
+  // Hooks para buscar dados
+  const { data: topOperadores = [], isLoading: isLoadingTopOperadores } = useTopUsers('operator', 3);
+  const { data: topAfiliados = [], isLoading: isLoadingTopAfiliados } = useTopUsers('affiliate', 3);
+  
+  // Hooks para favoritos
+  const { data: favorites = [], isLoading: isLoadingFavorites } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  
+  const isAuthenticated = !!user;
 
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -31,6 +30,14 @@ const Destaques = () => {
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
   };
+
+  const handleRemoveFavorite = (userId: string) => {
+    toggleFavorite.mutate({ targetId: userId, isCurrentlyFavorite: true });
+  };
+
+  // Separar favoritos por tipo
+  const favoriteOperators = favorites.filter(f => f.role === 'operator');
+  const favoriteAffiliates = favorites.filter(f => f.role === 'affiliate');
 
   // If user is not authenticated, show the landing page
   if (!isAuthenticated) {
@@ -140,26 +147,50 @@ const Destaques = () => {
           </p>
         </section>
 
-        {/* Podiums Section - temporarily hidden until Supabase data is available */}
-        {mockTopOperadores.length > 0 && mockTopAfiliados.length > 0 && (
-          <section className="max-w-7xl mx-auto mb-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <PodiumCard
-                title="Top Operadores"
-                data={mockTopOperadores}
-                linkType="operadores"
-              />
-              <PodiumCard
-                title="Top Afiliados"
-                data={mockTopAfiliados}
-                linkType="afiliados"
-              />
-            </div>
-          </section>
-        )}
+        {/* Podiums Section */}
+        <section className="max-w-7xl mx-auto mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <PodiumCard
+              title="🏆 Top Operadores"
+              data={topOperadores}
+              linkType="operadores"
+              isLoading={isLoadingTopOperadores}
+            />
+            <PodiumCard
+              title="🏆 Top Afiliados"
+              data={topAfiliados}
+              linkType="afiliados"
+              isLoading={isLoadingTopAfiliados}
+            />
+          </div>
+        </section>
 
-        {/* Match Perfeito Section - temporarily hidden until Supabase data is available */}
-        {/* <MatchPerfectSection /> */}
+        {/* Favorites Section */}
+        <section className="max-w-7xl mx-auto mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-brand-primary mb-4">
+              Seus Favoritos
+            </h2>
+            <p className="text-gray-600">
+              Os parceiros que você marcou como favoritos
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <FavoritesList
+              title="⭐ Operadores Favoritos"
+              favorites={favoriteOperators}
+              isLoading={isLoadingFavorites}
+              onRemoveFavorite={handleRemoveFavorite}
+            />
+            <FavoritesList
+              title="⭐ Afiliados Favoritos"
+              favorites={favoriteAffiliates}
+              isLoading={isLoadingFavorites}
+              onRemoveFavorite={handleRemoveFavorite}
+            />
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import ProfileDetailsCard from '@/components/ProfileDetailsCard';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ProfileEditForm from '@/components/ProfileEditForm';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import CreditBalance from '@/components/CreditBalance';
+// import CreditBalance from '@/components/CreditBalance';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { createUserProfile } from '@/hooks/useRegistration';
 import { useNavigate } from 'react-router-dom';
@@ -314,7 +314,7 @@ const PerfilContent = () => {
           {/* Left Column */}
           <div className="space-y-6">
             <ProfileCardLeft profile={profile} loading={false} />
-            <CreditBalance />
+            {/* <CreditBalance /> */}
           </div>
 
           {/* Right Column */}

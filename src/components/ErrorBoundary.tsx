@@ -57,14 +57,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 Ir para Lista de Parceiros
               </Button>
             </div>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {this.state.error && (
               <details className="text-left bg-gray-100 p-4 rounded text-sm">
                 <summary className="cursor-pointer font-semibold mb-2">
-                  Detalhes do erro (desenvolvimento)
+                  Detalhes do erro
                 </summary>
-                <pre className="whitespace-pre-wrap text-xs">
-                  {this.state.error.stack}
-                </pre>
+                <div className="space-y-2">
+                  <p><strong>Message:</strong> {this.state.error.message}</p>
+                  <p><strong>Name:</strong> {this.state.error.name}</p>
+                  <pre className="whitespace-pre-wrap text-xs bg-gray-200 p-2 rounded">
+                    {this.state.error.stack}
+                  </pre>
+                </div>
               </details>
             )}
           </div>

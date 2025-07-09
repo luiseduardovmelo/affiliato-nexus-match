@@ -1,3 +1,5 @@
+// SISTEMA DE CRÉDITOS DESABILITADO TEMPORARIAMENTE
+/*
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -404,4 +406,40 @@ export const useIsContactRevealed = (targetId: string) => {
     retry: 1,
     retryDelay: 1000,
   });
+};
+*/
+
+// HOOKS MOCK PARA MANTER COMPATIBILIDADE
+export const useCreditBalance = () => {
+  return {
+    data: {
+      totalCredits: 999,
+      dailyCreditsUsed: 0,
+      dailyCreditsRemaining: 999,
+      lastDailyRefresh: null,
+      recentTransactions: []
+    },
+    isLoading: false,
+    error: null
+  };
+};
+
+export const useAddDailyCredits = () => {
+  return {
+    mutate: () => {},
+    isPending: false,
+    error: null
+  };
+};
+
+export const useRevealContact = () => {
+  return {
+    mutate: () => {},
+    isPending: false,
+    error: null
+  };
+};
+
+export const useIsContactRevealed = () => {
+  return false;
 };

@@ -12,30 +12,33 @@ import ProfilePage from "./pages/ProfilePage";
 import Home from "./pages/Home";
 import Registration from "./pages/Registration";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/home" element={<Home />} />
-          <Route path="/registration" element={<Registration />} />
-          <Route path="/" element={<AppShell />}>
-            <Route index element={<Lista />} />
-            <Route path="destaques" element={<Destaques />} />
-            <Route path="lista" element={<Lista />} />
-            <Route path="perfil" element={<Perfil />} />
-            <Route path="profile/:id" element={<ProfilePage />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/registration" element={<Registration />} />
+              <Route path="/" element={<AppShell />}>
+                <Route index element={<Lista />} />
+                <Route path="destaques" element={<Destaques />} />
+                <Route path="lista" element={<Lista />} />
+                <Route path="perfil" element={<Perfil />} />
+                <Route path="profile/:id" element={<ProfilePage />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
 );
 
 export default App;
