@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Languages, Phone, MessageCircle, Mail, Building, Users, Calendar, DollarSign, Globe, Settings, Zap } from 'lucide-react';
@@ -30,8 +31,8 @@ interface ProfileDetailsCardProps {
     workLanguages?: string[];
     chargedValue?: string;
     basicInfo?: string;
-    currentOperators?: string;
-    previousOperators?: string;
+    currentOperators?: string; // Changed from string[] to string
+    previousOperators?: string; // Changed from string[] to string
     specialties?: string[];
   };
   loading: boolean;
@@ -59,7 +60,7 @@ const ProfileDetailsCard = ({ profile, loading }: ProfileDetailsCardProps) => {
     );
   }
 
-  const isOperator = profile.type === 'Operador';
+  const isOperator = profile.type === 'operador';
 
   return (
     <div className="space-y-6">

@@ -65,32 +65,40 @@ const ProfilePage = () => {
     specialties: operatorData 
       ? (getOperatorProperty(operatorData, 'commission_models') || []).slice(0, 3)
       : (getAffiliateProperty(affiliateData, 'traffic_sources') || []).slice(0, 3),
+    // Contact info
+    email: userData.users.email,
+    phone: userData.users.phone,
+    telegram: userData.users.telegram,
+    language: userData.users.language,
+    memberSince: userData.users.created_at,
     // Operator specific fields - using type-safe getters
-    monthlyTrafficVolume: getOperatorProperty(operatorData, 'monthly_volume'),
+    monthlyVolume: getOperatorProperty(operatorData, 'monthly_volume'),
     commissionModels: getOperatorProperty(operatorData, 'commission_models') || [],
-    paymentFrequency: getOperatorProperty(operatorData, 'payment_schedule'),
+    paymentSchedule: getOperatorProperty(operatorData, 'payment_schedule'),
     acceptsRetargeting: getOperatorProperty(operatorData, 'accepts_retargeting'),
     installsPostback: getOperatorProperty(operatorData, 'installs_postback'),
     platformType: getOperatorProperty(operatorData, 'platform_type'),
     whiteLabel: getOperatorProperty(operatorData, 'white_label'),
+    acceptedCountries: getOperatorProperty(operatorData, 'accepted_countries') || [],
     // Affiliate specific fields - using type-safe getters
     chargedValue: getAffiliateProperty(affiliateData, 'charged_value'),
-    desiredCommissionMethod: getAffiliateProperty(affiliateData, 'commission_model'),
-    trafficTypes: getAffiliateProperty(affiliateData, 'traffic_sources') || [],
+    commissionModel: getAffiliateProperty(affiliateData, 'commission_model'),
+    trafficSources: getAffiliateProperty(affiliateData, 'traffic_sources') || [],
     basicInfo: getAffiliateProperty(affiliateData, 'basic_info'),
+    workLanguages: getAffiliateProperty(affiliateData, 'work_languages') || [],
     currentOperators: (() => {
       const current = getAffiliateProperty(affiliateData, 'current_operators');
-      if (!current) return [];
+      if (!current) return '';
       return typeof current === 'string' 
-        ? current.split(',').map(op => op.trim()).filter(op => op.length > 0)
-        : Array.isArray(current) ? current : [];
+        ? current
+        : Array.isArray(current) ? current.join(', ') : '';
     })(),
     previousOperators: (() => {
       const previous = getAffiliateProperty(affiliateData, 'previous_operators');
-      if (!previous) return [];
+      if (!previous) return '';
       return typeof previous === 'string'
-        ? previous.split(',').map(op => op.trim()).filter(op => op.length > 0)
-        : Array.isArray(previous) ? previous : [];
+        ? previous
+        : Array.isArray(previous) ? previous.join(', ') : '';
     })(),
   } : null;
 
@@ -138,7 +146,7 @@ const ProfilePage = () => {
 
       <div className="container mx-auto mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
-          <ProfileDetailsCard profile={profile} />
+          <ProfileDetailsCard profile={profile} loading={false} />
           <AboutCard description={profile.description} loading={false} />
           <ActivityTimeline activities={activities} loading={false} />
         </div>
