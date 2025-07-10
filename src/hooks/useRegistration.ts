@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import type { RegistrationData, UserType } from '@/types/registration';
+import { sanitizeInput, isValidEmail, isValidPhone, isValidDisplayName, logSecurityEvent } from '@/utils/security';
 
 interface UseRegistrationResult {
   isLoading: boolean;
@@ -18,17 +19,41 @@ export const useRegistration = (): UseRegistrationResult => {
     setIsLoading(true);
     
     try {
-      console.log('🚀 Starting registration process...', { email: data.basicData.email, userType: data.userType });
+      console.log('🚀 Starting secure registration process...', { email: data.basicData.email, userType: data.userType });
+      
+      // Sanitize all inputs
+      const sanitizedEmail = sanitizeInput(data.basicData.email).toLowerCase();
+      const sanitizedDisplayName = sanitizeInput(data.basicData.displayName);
+      const sanitizedPhone = sanitizeInput(data.basicData.phone || '');
+      const sanitizedCountry = sanitizeInput(data.basicData.country);
+      
+      // Validate inputs
+      if (!isValidEmail(sanitizedEmail)) {
+        throw new Error('Formato de email inválido');
+      }
+      
+      if (!isValidDisplayName(sanitizedDisplayName)) {
+        throw new Error('Nome deve ter entre 1 e 100 caracteres');
+      }
+      
+      if (sanitizedPhone && !isValidPhone(sanitizedPhone)) {
+        throw new Error('Formato de telefone inválido');
+      }
+      
+      if (data.basicData.password.length < 6) {
+        throw new Error('A senha deve ter pelo menos 6 caracteres');
+      }
       
       // Step 1: Create user in Supabase Auth
       console.log('📧 Creating user in Supabase Auth...');
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.basicData.email,
+        email: sanitizedEmail,
         password: data.basicData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
-            display_name: data.basicData.displayName,
-            country: data.basicData.country,
+            display_name: sanitizedDisplayName,
+            country: sanitizedCountry,
             role: data.userType,
           }
         }
@@ -36,6 +61,10 @@ export const useRegistration = (): UseRegistrationResult => {
 
       if (authError) {
         console.error('❌ Auth error:', authError);
+        await logSecurityEvent('registration_auth_failed', {
+          email: sanitizedEmail,
+          error: authError.message
+        });
         throw authError;
       }
 
@@ -47,13 +76,13 @@ export const useRegistration = (): UseRegistrationResult => {
       console.log('👤 Creating user profile in users table...');
       const userInsertData = {
         id: userId,
-        email: data.basicData.email,
-        display_name: data.basicData.displayName,
-        country: data.basicData.country,
+        email: sanitizedEmail,
+        display_name: sanitizedDisplayName,
+        country: sanitizedCountry,
         role: data.userType,
         status: 'active' as const,
         password_hash: 'managed_by_supabase_auth', // Required field in schema
-        phone: data.basicData.phone || '' // Required field in database
+        phone: sanitizedPhone || '' // Required field in database
       };
       
       console.log('📋 User insert data:', userInsertData);
@@ -69,6 +98,10 @@ export const useRegistration = (): UseRegistrationResult => {
           hint: userError.hint,
           code: userError.code,
           full_error: userError
+        });
+        await logSecurityEvent('registration_profile_failed', {
+          email: sanitizedEmail,
+          error: userError.message
         });
         throw userError;
       }
@@ -114,6 +147,11 @@ export const useRegistration = (): UseRegistrationResult => {
         console.log('✅ Operator profile created successfully');
       }
 
+      await logSecurityEvent('registration_successful', {
+        email: sanitizedEmail,
+        userType: data.userType
+      });
+
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo ao iGaming Connect. Redirecionando...",
@@ -139,10 +177,10 @@ export const useRegistration = (): UseRegistrationResult => {
       
       if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
         errorMessage = 'Este email já está registrado.';
-      } else if (error.message?.includes('invalid email')) {
-        errorMessage = 'Email inválido.';
-      } else if (error.message?.includes('weak password')) {
-        errorMessage = 'Senha muito fraca. Use pelo menos 6 caracteres.';
+      } else if (error.message?.includes('invalid email') || error.message?.includes('inválido')) {
+        errorMessage = error.message.includes('inválido') ? error.message : 'Email inválido.';
+      } else if (error.message?.includes('weak password') || error.message?.includes('caracteres')) {
+        errorMessage = error.message.includes('caracteres') ? error.message : 'Senha muito fraca. Use pelo menos 6 caracteres.';
       } else if (error.message?.includes('duplicate key') || error.code === '23505') {
         errorMessage = 'Este usuário já existe no sistema.';
       } else if (error.message?.includes('violates')) {

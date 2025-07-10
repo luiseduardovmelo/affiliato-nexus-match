@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/integrations/supabase/types';
+import { useSecureAuth } from './useSecureAuth';
 
 interface AuthState {
   user: User | null;
@@ -26,130 +28,23 @@ interface AuthHook {
 }
 
 export const useAuth = (): AuthHook => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    loading: true,
-  });
-
-  useEffect(() => {
-    let mounted = true;
-    
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      if (error) {
-        console.error('Auth error:', error);
-        setAuthState({
-          user: null,
-          loading: false,
-        });
-        return;
-      }
-      
-      setAuthState({
-        user: session?.user ?? null,
-        loading: false,
-      });
-    }).catch((error) => {
-      if (!mounted) return;
-      
-      console.error('Critical auth error:', error);
-      setAuthState({
-        user: null,
-        loading: false,
-      });
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        setAuthState({
-          user: session?.user ?? null,
-          loading: false,
-        });
-      }
-    );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
+  const { user, loading, secureLogin, secureSignUp, secureLogout } = useSecureAuth();
 
   const login = async (email: string, password: string) => {
-    try {
-      // Starting login process
-      setAuthState(prev => ({ ...prev, loading: true }));
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Login error:', error);
-        throw error;
-      }
-      return { error: null };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { error };
-    } finally {
-      setAuthState(prev => ({ ...prev, loading: false }));
-    }
+    return await secureLogin(email, password);
   };
 
   const register = async (email: string, password: string, extraData?: RegisterData) => {
-    try {
-      setAuthState(prev => ({ ...prev, loading: true }));
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role: extraData?.role || 'afiliado',
-            display_name: extraData?.display_name || '',
-            country: extraData?.country || '',
-            ...extraData
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      return { error: null };
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { error };
-    } finally {
-      setAuthState(prev => ({ ...prev, loading: false }));
-    }
+    return await secureSignUp(email, password, extraData);
   };
 
   const logout = async () => {
-    try {
-      setAuthState(prev => ({ ...prev, loading: true }));
-      
-      const { error } = await supabase.auth.signOut();
-
-      if (error) throw error;
-
-      return { error: null };
-    } catch (error) {
-      console.error('Logout error:', error);
-      return { error };
-    } finally {
-      setAuthState(prev => ({ ...prev, loading: false }));
-    }
+    return await secureLogout();
   };
 
   return {
-    user: authState.user,
-    loading: authState.loading,
+    user,
+    loading,
     login,
     register,
     logout,
