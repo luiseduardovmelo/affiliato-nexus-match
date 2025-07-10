@@ -81,25 +81,25 @@ const ProfilePage = () => {
     description: userData.description || `${operatorData ? 'Operador' : 'Afiliado'} verificado`,
     type: operatorData ? 'operador' : 'afiliado',
     specialties: operatorData 
-      ? (Array.isArray(operatorData.commission_models) ? operatorData.commission_models : []).slice(0, 3)
-      : (Array.isArray(affiliateData?.traffic_sources) ? affiliateData.traffic_sources : []).slice(0, 3),
+      ? (Array.isArray((operatorData as any).commission_models) ? (operatorData as any).commission_models : []).slice(0, 3)
+      : (Array.isArray((affiliateData as any)?.traffic_sources) ? (affiliateData as any).traffic_sources : []).slice(0, 3),
     // Operator specific fields
-    monthlyTrafficVolume: operatorData?.monthly_volume,
-    commissionModels: Array.isArray(operatorData?.commission_models) ? operatorData.commission_models : [],
-    paymentFrequency: operatorData?.payment_schedule,
-    acceptsRetargeting: operatorData?.accepts_retargeting,
-    installsPostback: operatorData?.installs_postback,
-    platformType: operatorData?.platform_type,
-    whiteLabel: operatorData?.white_label,
+    monthlyTrafficVolume: (operatorData as any)?.monthly_volume,
+    commissionModels: Array.isArray((operatorData as any)?.commission_models) ? (operatorData as any).commission_models : [],
+    paymentFrequency: (operatorData as any)?.payment_schedule,
+    acceptsRetargeting: (operatorData as any)?.accepts_retargeting,
+    installsPostback: (operatorData as any)?.installs_postback,
+    platformType: (operatorData as any)?.platform_type,
+    whiteLabel: (operatorData as any)?.white_label,
     // Affiliate specific fields
-    chargedValue: affiliateData?.charged_value,
-    desiredCommissionMethod: affiliateData?.commission_model,
-    trafficTypes: Array.isArray(affiliateData?.traffic_sources) ? affiliateData.traffic_sources : [],
-    basicInfo: affiliateData?.basic_info,
-    currentOperators: affiliateData?.current_operators ? 
-      (typeof affiliateData.current_operators === 'string' ? affiliateData.current_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : affiliateData.current_operators) : [],
-    previousOperators: affiliateData?.previous_operators ? 
-      (typeof affiliateData.previous_operators === 'string' ? affiliateData.previous_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : affiliateData.previous_operators) : [],
+    chargedValue: (affiliateData as any)?.charged_value,
+    desiredCommissionMethod: (affiliateData as any)?.commission_model,
+    trafficTypes: Array.isArray((affiliateData as any)?.traffic_sources) ? (affiliateData as any).traffic_sources : [],
+    basicInfo: (affiliateData as any)?.basic_info,
+    currentOperators: (affiliateData as any)?.current_operators ? 
+      (typeof (affiliateData as any).current_operators === 'string' ? (affiliateData as any).current_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : (affiliateData as any).current_operators) : [],
+    previousOperators: (affiliateData as any)?.previous_operators ? 
+      (typeof (affiliateData as any).previous_operators === 'string' ? (affiliateData as any).previous_operators.split(',').map(op => op.trim()).filter(op => op.length > 0) : (affiliateData as any).previous_operators) : [],
   } : mockProfile;
   
   if (isLoading) {
