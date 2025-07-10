@@ -1,3 +1,4 @@
+
 // Export all custom hooks
 export { useAuth, testAuthTypes } from './useAuth';
 export { 
@@ -10,12 +11,13 @@ export {
 } from './useUsers';
 export { useRegistration } from './useRegistration';
 export { useCurrentUser } from './useCurrentUser';
+export { useSecureAuth } from './useSecureAuth';
 
-// Re-export existing hooks for consistency
-export { default as useFavorites } from './useFavorites';
-export { default as useRevealState } from './useRevealState';
-export { default as useProfileData } from './useProfileData';
-export { default as useDraggablePosition } from './useDraggablePosition';
+// Re-export existing hooks with proper imports (not default imports)
+export { useIsFavorite, useToggleFavorite } from './useFavorites';
+export { useRevealState } from './useRevealState';
+export { useProfileData } from './useProfileData';
+export { useDraggablePosition } from './useDraggablePosition';
 
 // Run type tests in development
 if (process.env.NODE_ENV === 'development') {

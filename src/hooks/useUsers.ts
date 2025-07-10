@@ -1,8 +1,18 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { OperadorData, AfiliadoData } from '@/integrations/supabase/types';
+import type { Tables } from '@/integrations/supabase/types';
 
 type UserRole = 'operator' | 'affiliate';
+
+// Use the generated types from Supabase
+type OperatorData = Tables<'operator_specs'> & {
+  users: Tables<'users'>;
+};
+
+type AffiliateData = Tables<'affiliate_specs'> & {
+  users: Tables<'users'>;
+};
 
 interface UseUsersResult<T> {
   data: T[] | undefined;
@@ -11,7 +21,7 @@ interface UseUsersResult<T> {
   refetch: () => void;
 }
 
-export const useUsers = <T = OperadorData | AfiliadoData>(
+export const useUsers = <T = OperatorData | AffiliateData>(
   role: UserRole
 ): UseUsersResult<T> => {
   const tableName = role === 'operator' ? 'operator_specs' : 'affiliate_specs';
@@ -33,7 +43,8 @@ export const useUsers = <T = OperadorData | AfiliadoData>(
             telegram,
             created_at,
             updated_at,
-            status
+            status,
+            role
           )
         `)
         .eq('users.status', 'active'); // Only fetch active users
@@ -46,7 +57,7 @@ export const useUsers = <T = OperadorData | AfiliadoData>(
       return data as T[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
     refetchOnWindowFocus: false,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -61,12 +72,12 @@ export const useUsers = <T = OperadorData | AfiliadoData>(
 };
 
 // Specialized hooks for better type safety
-export const useOperators = (): UseUsersResult<OperadorData> => {
-  return useUsers<OperadorData>('operator');
+export const useOperators = (): UseUsersResult<OperatorData> => {
+  return useUsers<OperatorData>('operator');
 };
 
-export const useAffiliates = (): UseUsersResult<AfiliadoData> => {
-  return useUsers<AfiliadoData>('affiliate');
+export const useAffiliates = (): UseUsersResult<AffiliateData> => {
+  return useUsers<AffiliateData>('affiliate');
 };
 
 // Hook for fetching a single user by ID
@@ -92,7 +103,8 @@ export const useUserById = (userId: string, role: UserRole) => {
             telegram,
             created_at,
             updated_at,
-            status
+            status,
+            role
           )
         `)
         .eq('user_id', userId)
@@ -114,13 +126,13 @@ export const useUserById = (userId: string, role: UserRole) => {
     },
     enabled: !!userId, // Only run query if userId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
     retry: false, // Don't retry on "not found" errors
   });
 };
 
 // Hook for searching users with filters
-export const useUsersWithFilters = <T = OperadorData | AfiliadoData>(
+export const useUsersWithFilters = <T = OperatorData | AffiliateData>(
   role: UserRole,
   filters: {
     country?: string;
@@ -146,7 +158,8 @@ export const useUsersWithFilters = <T = OperadorData | AfiliadoData>(
             phone,
             created_at,
             updated_at,
-            status
+            status,
+            role
           )
         `)
         .eq('users.status', 'active');
@@ -181,7 +194,7 @@ export const useUsersWithFilters = <T = OperadorData | AfiliadoData>(
       return data as T[];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes for filtered results
-    cacheTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes (renamed from cacheTime)
     refetchOnWindowFocus: false,
     retry: 2,
   });
@@ -194,21 +207,21 @@ export const useUsersWithFilters = <T = OperadorData | AfiliadoData>(
   };
 };
 
-// Type tests using generated Supabase types
+// Type tests using actual Supabase types
 export const testUserTypes = () => {
-  // Test OperadorData type from generated types
-  const operatorData: OperadorData = {
+  // Test OperatorData type structure
+  const operatorData = {
     user_id: 'test-user-id',
     monthly_volume: '1M+ visits',
     commission_models: ['CPA', 'REV'],
-    payment_schedule: 'mensal',
+    payment_schedule: 'monthly' as const,
     accepted_countries: ['Brasil', 'Portugal'],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
-  // Test AfiliadoData type from generated types
-  const affiliateData: AfiliadoData = {
+  // Test AffiliateData type structure
+  const affiliateData = {
     user_id: 'test-user-id',
     traffic_sources: ['SEO', 'YouTube orgânico'],
     commission_model: 'CPA',
@@ -217,8 +230,8 @@ export const testUserTypes = () => {
     updated_at: new Date().toISOString(),
   };
 
-  console.log('✅ OperadorData type test passed:', operatorData);
-  console.log('✅ AfiliadoData type test passed:', affiliateData);
+  console.log('✅ OperatorData type test passed:', operatorData);
+  console.log('✅ AffiliateData type test passed:', affiliateData);
   
   return { operatorData, affiliateData };
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsers } from '@/hooks/useUsers';
@@ -126,7 +125,7 @@ const Lista = () => {
       country: item.users?.country || 'Brasil',
       language: item.users?.language || 'Português',
       description: item.description || `${activeTab === 'operadores' ? 'Operador' : 'Afiliado'} verificado`,
-      type: activeTab === 'operadores' ? 'operador' : 'afiliado',
+      type: activeTab === 'operadores' ? 'operador' as const : 'afiliado' as const,
       specialties: activeTab === 'operadores' 
         ? (Array.isArray(item.commission_models) ? item.commission_models : []).slice(0, 3)
         : (Array.isArray(item.traffic_sources) ? item.traffic_sources : []).slice(0, 3),
@@ -156,7 +155,7 @@ const Lista = () => {
 
   // Filter and search data
   const filteredData = useMemo(() => {
-    return listingData.filter((item: Listing) => {
+    return listingData.filter((item) => {
       const matchesSearch = item.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                            item.description.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesCountry = !filters.country || item.country === filters.country;
@@ -169,7 +168,7 @@ const Lista = () => {
           (Array.isArray(item.commissionModels) && item.commissionModels.length > 0 && 
            filters.commissionModels.some(model => {
              const normalizedModel = model.toLowerCase();
-             return item.commissionModels.some(itemModel => {
+             return item.commissionModels?.some(itemModel => {
                const normalizedItemModel = itemModel.toLowerCase();
                // Exact match
                if (normalizedItemModel === normalizedModel) return true;

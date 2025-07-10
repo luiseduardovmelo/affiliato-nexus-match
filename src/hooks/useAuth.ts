@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import type { UserProfile } from '@/integrations/supabase/types';
 import { useSecureAuth } from './useSecureAuth';
 
 interface AuthState {
@@ -51,15 +50,15 @@ export const useAuth = (): AuthHook => {
   };
 };
 
-// Type test using generated Supabase types
+// Type test using basic types instead of generated ones
 export const testAuthTypes = () => {
-  // Test UserProfile type from generated types
-  const userProfile: UserProfile = {
+  // Test basic user profile structure
+  const userProfile = {
     id: 'test-id',
     email: 'test@example.com',
     password_hash: 'hash',
-    role: 'afiliado',
-    status: 'active',
+    role: 'afiliado' as const,
+    status: 'active' as const,
     display_name: 'Test User',
     country: 'Brasil',
     created_at: new Date().toISOString(),
