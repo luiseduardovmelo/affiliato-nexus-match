@@ -2,8 +2,14 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCredits } from './useCredits';
+import { canRevealContact, type UserRole } from '@/utils/accessControl';
 
-export const useRevealContact = (profileId: string, currentUserId: string) => {
+export const useRevealContact = (
+  profileId: string, 
+  currentUserId: string,
+  currentUserRole?: UserRole,
+  targetUserRole?: UserRole
+) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingReveal, setIsLoadingReveal] = useState(false);
   const [revealError, setRevealError] = useState<string | null>(null);
@@ -22,6 +28,13 @@ export const useRevealContact = (profileId: string, currentUserId: string) => {
   const handleRevealContact = async () => {
     if (!currentUserId || !profileId) {
       setRevealError('User not authenticated');
+      return;
+    }
+
+    // Check role-based access control
+    const accessCheck = canRevealContact(currentUserRole, targetUserRole, currentUserId, profileId);
+    if (!accessCheck.allowed) {
+      setRevealError(accessCheck.reason || 'Access denied');
       return;
     }
 

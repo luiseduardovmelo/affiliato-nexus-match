@@ -11,10 +11,15 @@ import { useUserById } from '@/hooks/useUsers';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRevealContact } from '@/hooks/useRevealContact';
 import { isOperatorProfile, isAffiliateProfile, type UserProfile, type OperatorProfile, type AffiliateProfile } from '@/types/profile';
+import { maskContactData } from '@/utils/contactUtils';
+import { useContactReveal } from '@/hooks/useContactReveal';
+import { type ExtendedOperatorData, type ExtendedAffiliateData } from '@/types/userTypes';
+import { sanitizeHtmlContent } from '@/utils/securityValidation';
 
 const ProfilePage = () => {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useCurrentUser();
+  const { isRevealed: isContactRevealed, isLoading: isRevealLoading } = useContactReveal(currentUser?.id, id);
   
   const {
     isModalOpen,
@@ -25,7 +30,12 @@ const ProfilePage = () => {
     isLoadingReveal,
     revealError,
     credits,
-  } = useRevealContact(id || '', currentUser?.id || '');
+  } = useRevealContact(
+    id || '', 
+    currentUser?.id || '',
+    currentUser?.role,
+    operatorData?.users?.role || affiliateData?.users?.role
+  );
 
   // Try to fetch as operator first, then as affiliate
   const { data: operatorData, isLoading: operatorLoading, error: operatorError } = useUserById(id || '', 'operator');
@@ -35,19 +45,19 @@ const ProfilePage = () => {
   const userData = operatorData || affiliateData;
 
   // Type-safe property access for operator data
-  const getOperatorProperty = <K extends keyof OperatorProfile['operator_specs']>(
-    data: any, 
+  const getOperatorProperty = <K extends keyof NonNullable<ExtendedOperatorData['operator_specs']>>(
+    data: ExtendedOperatorData | null, 
     key: K
-  ): OperatorProfile['operator_specs'][K] | undefined => {
+  ): NonNullable<ExtendedOperatorData['operator_specs']>[K] | undefined => {
     if (!data || !data.users || data.users.role !== 'operador') return undefined;
     return data.operator_specs?.[key];
   };
 
   // Type-safe property access for affiliate data  
-  const getAffiliateProperty = <K extends keyof AffiliateProfile['affiliate_specs']>(
-    data: any,
+  const getAffiliateProperty = <K extends keyof NonNullable<ExtendedAffiliateData['affiliate_specs']>>(
+    data: ExtendedAffiliateData | null,
     key: K
-  ): AffiliateProfile['affiliate_specs'][K] | undefined => {
+  ): NonNullable<ExtendedAffiliateData['affiliate_specs']>[K] | undefined => {
     if (!data || !data.users || data.users.role !== 'afiliado') return undefined;
     return data.affiliate_specs?.[key];
   };
@@ -59,7 +69,7 @@ const ProfilePage = () => {
     rating: userData.users.rating_cached || 0,
     totalReviews: userData.users.total_reviews || 0,
     country: userData.users.country,
-    description: userData.users.description || `${operatorData ? 'Operador' : 'Afiliado'} verificado`,
+    description: sanitizeHtmlContent(userData.users.description || `${operatorData ? 'Operador' : 'Afiliado'} verificado`),
     type: operatorData ? 'operador' : 'afiliado',
     isVerified: userData.users.status === 'active',
     specialties: operatorData 
@@ -84,17 +94,17 @@ const ProfilePage = () => {
     chargedValue: getAffiliateProperty(affiliateData, 'charged_value'),
     commissionModel: getAffiliateProperty(affiliateData, 'commission_model'),
     trafficSources: getAffiliateProperty(affiliateData, 'traffic_sources') || [],
-    basicInfo: getAffiliateProperty(affiliateData, 'basic_info'),
+    basicInfo: sanitizeHtmlContent(getAffiliateProperty(affiliateData, 'basic_info') || ''),
     workLanguages: getAffiliateProperty(affiliateData, 'work_languages') || [],
     currentOperators: (() => {
-      const current = getAffiliateProperty(affiliateData, 'current_operators');
+      const current = getAffiliateProperty(affiliateData as ExtendedAffiliateData, 'current_operators');
       if (!current) return '';
       return typeof current === 'string' 
         ? current
         : Array.isArray(current) ? current.join(', ') : '';
     })(),
     previousOperators: (() => {
-      const previous = getAffiliateProperty(affiliateData, 'previous_operators');
+      const previous = getAffiliateProperty(affiliateData as ExtendedAffiliateData, 'previous_operators');
       if (!previous) return '';
       return typeof previous === 'string'
         ? previous
@@ -128,13 +138,17 @@ const ProfilePage = () => {
     return <div>Profile not found.</div>;
   }
 
-  // Mock contact data - in a real app this would come from the revealed contact info
-  const contactData = {
-    email: userData?.users?.email || 'contact@example.com',
-    telegram: userData?.users?.telegram || '@username',
-    whatsapp: userData?.users?.phone || '+55 11 99999-9999',
-    telefone: userData?.users?.phone || '+55 11 99999-9999'
+  // Contact data - masked unless revealed or own profile
+  const rawContactData = {
+    email: userData?.users?.email || '',
+    telegram: userData?.users?.telegram || '',
+    whatsapp: userData?.users?.phone || '',
+    telefone: userData?.users?.phone || ''
   };
+
+  const contactData = isContactRevealed 
+    ? rawContactData
+    : maskContactData(rawContactData);
 
   return (
     <div className="profile-page">
@@ -152,7 +166,7 @@ const ProfilePage = () => {
         </div>
 
         <div>
-          <ContactCard contact={contactData} />
+          <ContactCard contact={contactData} isRevealed={isContactRevealed} />
         </div>
       </div>
 

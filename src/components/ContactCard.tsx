@@ -10,25 +10,31 @@ interface ContactData {
 
 interface ContactCardProps {
   contact: ContactData;
+  isRevealed?: boolean;
 }
 
 const ContactCard = ({
-  contact
+  contact,
+  isRevealed = false
 }: ContactCardProps) => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
   const handleEmailClick = () => {
+    if (!isRevealed) return;
     window.open(`mailto:${contact.email}`, '_blank');
   };
   const handlePhoneClick = () => {
+    if (!isRevealed) return;
     window.open(`tel:${contact.telefone}`, '_blank');
   };
   const handleWhatsAppClick = () => {
+    if (!isRevealed) return;
     const cleanNumber = contact.whatsapp.replace(/[^\d+]/g, '');
     window.open(`https://wa.me/${cleanNumber}`, '_blank');
   };
   const handleTelegramClick = () => {
+    if (!isRevealed) return;
     const username = contact.telegram.replace('@', '');
     window.open(`https://t.me/${username}`, '_blank');
   };
