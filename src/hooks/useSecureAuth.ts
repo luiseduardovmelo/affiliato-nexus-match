@@ -3,7 +3,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Session } from '@supabase/supabase-js';
-import { cleanupAuthState, checkRateLimit, logSecurityEvent, sanitizeInput, isValidEmail } from '@/utils/security';
+import { 
+  cleanupAuthState, 
+  checkAdvancedRateLimit, 
+  logSecurityEvent, 
+  sanitizeInput, 
+  isValidEmail,
+  isValidPassword,
+  createSafeErrorMessage
+} from '@/utils/security';
 
 interface SecureAuthState {
   user: User | null;
@@ -31,11 +39,17 @@ export const useSecureAuth = () => {
         if (event === 'SIGNED_IN') {
           await logSecurityEvent('user_signed_in', { 
             userId: session?.user?.id,
-            timestamp: new Date().toISOString() 
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent
           });
         } else if (event === 'SIGNED_OUT') {
           await logSecurityEvent('user_signed_out', { 
             timestamp: new Date().toISOString() 
+          });
+        } else if (event === 'TOKEN_REFRESHED') {
+          await logSecurityEvent('token_refreshed', { 
+            userId: session?.user?.id,
+            timestamp: new Date().toISOString()
           });
         }
         
@@ -53,6 +67,10 @@ export const useSecureAuth = () => {
       
       if (error) {
         console.error('Auth session error:', error);
+        logSecurityEvent('session_validation_error', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
         setAuthState({
           user: null,
           session: null,
@@ -70,6 +88,10 @@ export const useSecureAuth = () => {
       if (!mounted) return;
       
       console.error('Critical auth error:', error);
+      logSecurityEvent('critical_auth_error', {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
       setAuthState({
         user: null,
         session: null,
@@ -85,18 +107,26 @@ export const useSecureAuth = () => {
 
   const secureLogin = async (email: string, password: string) => {
     try {
-      // Sanitize inputs
+      // Enhanced input validation
       const sanitizedEmail = sanitizeInput(email).toLowerCase();
       
-      // Validate email format
       if (!isValidEmail(sanitizedEmail)) {
         throw new Error('Formato de email inválido');
       }
       
-      // Check rate limiting
-      if (!checkRateLimit(sanitizedEmail)) {
-        await logSecurityEvent('rate_limit_exceeded', { email: sanitizedEmail });
-        throw new Error('Muitas tentativas de login. Tente novamente em 15 minutos.');
+      if (!isValidPassword(password)) {
+        throw new Error('Senha deve ter pelo menos 8 caracteres');
+      }
+      
+      // Enhanced rate limiting
+      const rateCheck = checkAdvancedRateLimit(sanitizedEmail, 'login');
+      if (!rateCheck.allowed) {
+        await logSecurityEvent('login_rate_limited', { 
+          email: sanitizedEmail,
+          retryAfter: rateCheck.retryAfter 
+        });
+        const minutes = Math.ceil((rateCheck.retryAfter || 0) / 60);
+        throw new Error(`Muitas tentativas de login. Tente novamente em ${minutes} minutos.`);
       }
       
       setAuthState(prev => ({ ...prev, loading: true }));
@@ -109,6 +139,7 @@ export const useSecureAuth = () => {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
         // Continue even if this fails
+        console.warn('Pre-login signout failed:', err);
       }
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -119,12 +150,20 @@ export const useSecureAuth = () => {
       if (error) {
         await logSecurityEvent('login_failed', { 
           email: sanitizedEmail, 
-          error: error.message 
+          error: error.message,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
         });
         throw error;
       }
       
       if (data.user) {
+        await logSecurityEvent('login_successful', {
+          userId: data.user.id,
+          email: sanitizedEmail,
+          timestamp: new Date().toISOString()
+        });
+        
         // Force page reload for clean state
         setTimeout(() => {
           window.location.href = '/';
@@ -133,15 +172,17 @@ export const useSecureAuth = () => {
       
       return { error: null };
     } catch (error: any) {
-      console.error('Secure login error:', error);
+      const safeError = createSafeErrorMessage(error, 'Erro ao fazer login. Tente novamente.');
       
       let errorMessage = 'Erro ao fazer login. Tente novamente.';
       
       if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Email ou senha incorretos.';
-      } else if (error.message?.includes('rate')) {
+      } else if (error.message?.includes('minutos')) {
         errorMessage = error.message;
-      } else if (error.message?.includes('formato')) {
+      } else if (error.message?.includes('formato') || error.message?.includes('inválido')) {
+        errorMessage = error.message;
+      } else if (error.message?.includes('caracteres')) {
         errorMessage = error.message;
       }
       
@@ -151,7 +192,7 @@ export const useSecureAuth = () => {
         variant: "destructive",
       });
       
-      return { error: error.message };
+      return { error: errorMessage };
     } finally {
       setAuthState(prev => ({ ...prev, loading: false }));
     }
@@ -159,23 +200,27 @@ export const useSecureAuth = () => {
 
   const secureSignUp = async (email: string, password: string, extraData?: any) => {
     try {
-      // Sanitize inputs
+      // Enhanced input validation
       const sanitizedEmail = sanitizeInput(email).toLowerCase();
       const sanitizedDisplayName = extraData?.display_name ? sanitizeInput(extraData.display_name) : '';
       
-      // Validate inputs
       if (!isValidEmail(sanitizedEmail)) {
         throw new Error('Formato de email inválido');
       }
       
-      if (password.length < 6) {
-        throw new Error('A senha deve ter pelo menos 6 caracteres');
+      if (!isValidPassword(password)) {
+        throw new Error('A senha deve ter pelo menos 8 caracteres e não pode ser muito comum');
       }
       
-      // Check rate limiting
-      if (!checkRateLimit(sanitizedEmail)) {
-        await logSecurityEvent('signup_rate_limit_exceeded', { email: sanitizedEmail });
-        throw new Error('Muitas tentativas de cadastro. Tente novamente em 15 minutos.');
+      // Enhanced rate limiting
+      const rateCheck = checkAdvancedRateLimit(sanitizedEmail, 'registration');
+      if (!rateCheck.allowed) {
+        await logSecurityEvent('registration_rate_limited', { 
+          email: sanitizedEmail,
+          retryAfter: rateCheck.retryAfter 
+        });
+        const hours = Math.ceil((rateCheck.retryAfter || 0) / 3600);
+        throw new Error(`Muitas tentativas de cadastro. Tente novamente em ${hours} horas.`);
       }
       
       setAuthState(prev => ({ ...prev, loading: true }));
@@ -197,24 +242,30 @@ export const useSecureAuth = () => {
       if (error) {
         await logSecurityEvent('signup_failed', { 
           email: sanitizedEmail, 
-          error: error.message 
+          error: error.message,
+          timestamp: new Date().toISOString()
         });
         throw error;
       }
       
-      await logSecurityEvent('signup_successful', { email: sanitizedEmail });
+      await logSecurityEvent('signup_successful', { 
+        email: sanitizedEmail,
+        timestamp: new Date().toISOString()
+      });
       
       return { error: null };
     } catch (error: any) {
-      console.error('Secure signup error:', error);
+      const safeError = createSafeErrorMessage(error, 'Erro ao criar conta. Tente novamente.');
       
       let errorMessage = 'Erro ao criar conta. Tente novamente.';
       
       if (error.message?.includes('already registered')) {
         errorMessage = 'Este email já está registrado.';
-      } else if (error.message?.includes('weak password')) {
-        errorMessage = 'Senha muito simples. Use pelo menos 6 caracteres.';
-      } else if (error.message?.includes('formato') || error.message?.includes('caracteres')) {
+      } else if (error.message?.includes('weak password') || error.message?.includes('comum')) {
+        errorMessage = error.message.includes('comum') ? error.message : 'Senha muito simples. Use pelo menos 8 caracteres.';
+      } else if (error.message?.includes('formato') || error.message?.includes('caracteres') || error.message?.includes('inválido')) {
+        errorMessage = error.message;
+      } else if (error.message?.includes('horas')) {
         errorMessage = error.message;
       }
       
@@ -229,7 +280,8 @@ export const useSecureAuth = () => {
       setAuthState(prev => ({ ...prev, loading: true }));
       
       await logSecurityEvent('logout_initiated', { 
-        userId: authState.user?.id 
+        userId: authState.user?.id,
+        timestamp: new Date().toISOString()
       });
       
       // Clean up auth state
@@ -242,15 +294,20 @@ export const useSecureAuth = () => {
         console.warn('Global signout failed, continuing with cleanup');
       }
       
+      await logSecurityEvent('logout_completed', {
+        timestamp: new Date().toISOString()
+      });
+      
       // Force page reload for clean state
       window.location.href = '/';
       
       return { error: null };
     } catch (error: any) {
-      console.error('Secure logout error:', error);
+      const safeError = createSafeErrorMessage(error, 'Erro ao fazer logout.');
+      console.error('Secure logout error:', safeError);
       // Force redirect even if logout fails
       window.location.href = '/';
-      return { error: error.message };
+      return { error: safeError };
     }
   };
 

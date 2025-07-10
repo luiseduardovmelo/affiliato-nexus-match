@@ -1,11 +1,20 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { validateSecureInput, checkAdvancedRateLimit } from './securityValidation';
 
-// Input sanitization utilities
+// Re-export enhanced validation functions
+export { validateSecureInput, checkAdvancedRateLimit, createSafeErrorMessage } from './securityValidation';
+
+// Enhanced input sanitization
 export const sanitizeInput = (input: string): string => {
   if (!input) return '';
   
-  // Remove potential XSS vectors
+  // First validate the input
+  const validation = validateSecureInput(input, 'general');
+  if (!validation.isValid) {
+    throw new Error(validation.error || 'Invalid input');
+  }
+  
+  // Then sanitize
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
@@ -14,88 +23,124 @@ export const sanitizeInput = (input: string): string => {
     .trim();
 };
 
-// Validate email format
+// Enhanced email validation
 export const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-  return emailRegex.test(email);
+  const validation = validateSecureInput(email, 'email');
+  return validation.isValid;
 };
 
-// Validate phone format
+// Enhanced phone validation  
 export const isValidPhone = (phone: string): boolean => {
-  const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,20}$/;
-  return phoneRegex.test(phone);
+  const validation = validateSecureInput(phone, 'phone');
+  return validation.isValid;
 };
 
-// Validate display name
+// Enhanced display name validation
 export const isValidDisplayName = (name: string): boolean => {
-  return name.length >= 1 && name.length <= 100;
+  const validation = validateSecureInput(name, 'name');
+  return validation.isValid;
 };
 
-// Rate limiting for authentication attempts
-const authAttempts = new Map<string, { count: number; lastAttempt: number }>();
-
-export const checkRateLimit = (identifier: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): boolean => {
-  const now = Date.now();
-  const attempts = authAttempts.get(identifier);
-  
-  if (!attempts) {
-    authAttempts.set(identifier, { count: 1, lastAttempt: now });
-    return true;
-  }
-  
-  // Reset if window has passed
-  if (now - attempts.lastAttempt > windowMs) {
-    authAttempts.set(identifier, { count: 1, lastAttempt: now });
-    return true;
-  }
-  
-  // Check if limit exceeded
-  if (attempts.count >= maxAttempts) {
-    return false;
-  }
-  
-  // Increment attempts
-  authAttempts.set(identifier, { count: attempts.count + 1, lastAttempt: now });
-  return true;
+// Enhanced password validation
+export const isValidPassword = (password: string): boolean => {
+  const validation = validateSecureInput(password, 'password');
+  return validation.isValid;
 };
 
-// Security event logging
+// Enhanced rate limiting - now using advanced rate limiting
+export const checkRateLimit = (identifier: string, action: 'login' | 'registration' | 'passwordReset' | 'contactReveal' = 'login'): boolean => {
+  const result = checkAdvancedRateLimit(identifier, action);
+  return result.allowed;
+};
+
+// Enhanced security event logging with structured data
 export const logSecurityEvent = async (event: string, details: Record<string, any>) => {
-  console.warn(`🔒 Security Event: ${event}`, details);
+  const timestamp = new Date().toISOString();
+  const userAgent = navigator.userAgent;
+  const url = window.location.href;
   
-  // In production, you might want to send this to a security monitoring service
-  // For now, we'll just log to console and could extend to send to Supabase
+  const securityEvent = {
+    event_type: event,
+    timestamp,
+    user_agent: userAgent,
+    url,
+    ip_address: 'client-side', // Would be filled by server in real implementation
+    ...details
+  };
+  
+  // Enhanced logging with severity levels
+  const severity = getSeverityLevel(event);
+  
+  if (severity === 'critical' || severity === 'high') {
+    console.error(`🚨 SECURITY ALERT [${severity.toUpperCase()}]: ${event}`, securityEvent);
+  } else if (severity === 'medium') {
+    console.warn(`🔒 Security Event [${severity.toUpperCase()}]: ${event}`, securityEvent);
+  } else {
+    console.info(`🔍 Security Event [${severity.toUpperCase()}]: ${event}`, securityEvent);
+  }
+  
+  // In production, send to security monitoring service
   try {
-    // Could implement security event logging to a dedicated table
-    // await supabase.from('security_events').insert({
-    //   event_type: event,
-    //   details: details,
-    //   timestamp: new Date().toISOString(),
-    //   user_id: (await supabase.auth.getUser()).data.user?.id
-    // });
+    // Could implement security event logging to external service here
+    // await sendToSecurityService(securityEvent);
   } catch (error) {
-    console.error('Failed to log security event:', error);
+    console.error('Failed to log security event to external service:', error);
   }
 };
 
-// Clean auth state utility
+const getSeverityLevel = (event: string): 'low' | 'medium' | 'high' | 'critical' => {
+  const criticalEvents = ['xss_attempt_blocked', 'sql_injection_attempt', 'authentication_bypass_attempt'];
+  const highEvents = ['rate_limit_exceeded', 'suspicious_login_pattern', 'rls_policy_violation'];
+  const mediumEvents = ['login_failed', 'rate_limit_blocked_attempt', 'session_validation_error'];
+  
+  if (criticalEvents.some(e => event.includes(e))) return 'critical';
+  if (highEvents.some(e => event.includes(e))) return 'high';
+  if (mediumEvents.some(e => event.includes(e))) return 'medium';
+  return 'low';
+};
+
+// Enhanced auth state cleanup with secure token removal
 export const cleanupAuthState = () => {
-  // Remove standard auth tokens
-  localStorage.removeItem('supabase.auth.token');
-  
-  // Remove all Supabase auth keys from localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+  try {
+    // Remove all possible auth tokens from localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('auth-token'))) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => {
       localStorage.removeItem(key);
+    });
+    
+    // Remove from sessionStorage
+    const sessionKeysToRemove = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('auth-token'))) {
+        sessionKeysToRemove.push(key);
+      }
     }
-  });
-  
-  // Remove from sessionStorage if in use
-  Object.keys(sessionStorage || {}).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+    
+    sessionKeysToRemove.forEach(key => {
       sessionStorage.removeItem(key);
-    }
-  });
+    });
+    
+    // Clear any cookies that might contain auth data
+    document.cookie.split(";").forEach(cookie => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      if (name.includes('supabase') || name.includes('auth') || name.includes('sb-')) {
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+    });
+    
+    logSecurityEvent('auth_state_cleaned', { timestamp: new Date().toISOString() });
+  } catch (error) {
+    logSecurityEvent('auth_cleanup_error', { error: error.message });
+  }
 };
 
 // Secure logout function
