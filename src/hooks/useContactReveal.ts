@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useContactReveal = (currentUserId: string | undefined, targetUserId: string | undefined) => {
   const [isRevealed, setIsRevealed] = useState(false);
