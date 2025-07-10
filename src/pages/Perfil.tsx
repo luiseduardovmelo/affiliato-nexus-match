@@ -1,4 +1,3 @@
-
 import ProfileHero from '@/components/ProfileHero';
 import ProfileCardLeft from '@/components/ProfileCardLeft';
 import ProfileDetailsCard from '@/components/ProfileDetailsCard';
@@ -70,14 +69,32 @@ const PerfilContent = () => {
     profile: currentUser?.profile
   });
 
+  // Type-safe property access based on user type
+  const getOperatorData = () => {
+    if (currentUser?.isOperator && currentUser?.specificData) {
+      return currentUser.specificData as any; // This will be operator_specs type
+    }
+    return null;
+  };
+
+  const getAffiliateData = () => {
+    if (currentUser?.isAffiliate && currentUser?.specificData) {
+      return currentUser.specificData as any; // This will be affiliate_specs type
+    }
+    return null;
+  };
+
+  const operatorData = getOperatorData();
+  const affiliateData = getAffiliateData();
+
   const profile = {
     name: currentUser?.displayName || 'Usuário',
     type: currentUser?.isOperator ? 'Operador' : 'Afiliado',
     isVerified: true,
     avatar: '/placeholder.svg',
     specialties: currentUser?.isOperator 
-      ? (currentUser?.specificData?.commission_models || []).slice(0, 5)
-      : (currentUser?.specificData?.traffic_sources || []).slice(0, 5),
+      ? (operatorData?.commission_models || []).slice(0, 5)
+      : (affiliateData?.traffic_sources || []).slice(0, 5),
     location: `${currentUser?.country || 'Brasil'}`,
     description: currentUser?.specificData?.description || 'Nenhuma descrição adicionada.',
     // Informações adicionais para mostrar mais detalhes
@@ -87,23 +104,24 @@ const PerfilContent = () => {
     language: currentUser?.profile?.users?.language,
     role: currentUser?.role,
     memberSince: currentUser?.profile?.users?.created_at,
-    // Dados específicos baseados no tipo
-    ...(currentUser?.isOperator ? {
-      monthlyVolume: currentUser?.specificData?.monthly_volume || 'Não informado',
-      paymentSchedule: currentUser?.specificData?.payment_schedule || 'Não informado',
-      acceptedCountries: currentUser?.specificData?.accepted_countries || [],
-      platformType: currentUser?.specificData?.platform_type || 'Não informado',
-      acceptsRetargeting: currentUser?.specificData?.accepts_retargeting || false,
-      installsPostback: currentUser?.specificData?.installs_postback || false,
-      whiteLabel: currentUser?.specificData?.white_label || 'Não informado'
-    } : {
-      commissionModel: currentUser?.specificData?.commission_model || 'Não informado',
-      workLanguages: currentUser?.specificData?.work_languages || [],
-      chargedValue: currentUser?.specificData?.charged_value || 'Não informado',
-      basicInfo: currentUser?.specificData?.basic_info || 'Não informado',
-      currentOperators: currentUser?.specificData?.current_operators || 'Nenhum',
-      previousOperators: currentUser?.specificData?.previous_operators || 'Nenhum'
-    })
+    // Dados específicos baseados no tipo com type safety
+    ...(currentUser?.isOperator && operatorData ? {
+      monthlyVolume: operatorData.monthly_volume || 'Não informado',
+      paymentSchedule: operatorData.payment_schedule || 'Não informado',
+      acceptedCountries: operatorData.accepted_countries || [],
+      platformType: operatorData.platform_type || 'Não informado',
+      acceptsRetargeting: operatorData.accepts_retargeting || false,
+      installsPostback: operatorData.installs_postback || false,
+      whiteLabel: operatorData.white_label || 'Não informado'
+    } : {}),
+    ...(currentUser?.isAffiliate && affiliateData ? {
+      commissionModel: affiliateData.commission_model || 'Não informado',
+      workLanguages: affiliateData.work_languages || [],
+      chargedValue: affiliateData.charged_value || 'Não informado',
+      basicInfo: affiliateData.basic_info || 'Não informado',
+      currentOperators: affiliateData.current_operators || 'Nenhum',
+      previousOperators: affiliateData.previous_operators || 'Nenhum'
+    } : {})
   };
 
   console.log('📋 Profile object built:', profile);
@@ -262,27 +280,27 @@ const PerfilContent = () => {
                 telegram: currentUser?.profile?.users?.telegram || ''
               },
               
-              // Dados específicos do afiliado
-              ...(currentUser?.isAffiliate ? {
-                trafficTypes: currentUser?.specificData?.traffic_sources || [],
-                desiredCommissionMethod: currentUser?.specificData?.commission_model || 'CPA',
-                workLanguages: currentUser?.specificData?.work_languages || [],
-                chargedValue: currentUser?.specificData?.charged_value || '',
-                basicInfo: currentUser?.specificData?.basic_info || '',
-                currentOperators: currentUser?.specificData?.current_operators || '',
-                previousOperators: currentUser?.specificData?.previous_operators || '',
+              // Dados específicos do afiliado com type safety
+              ...(currentUser?.isAffiliate && affiliateData ? {
+                trafficTypes: affiliateData.traffic_sources || [],
+                desiredCommissionMethod: affiliateData.commission_model || 'CPA',
+                workLanguages: affiliateData.work_languages || [],
+                chargedValue: affiliateData.charged_value || '',
+                basicInfo: affiliateData.basic_info || '',
+                currentOperators: affiliateData.current_operators || '',
+                previousOperators: affiliateData.previous_operators || '',
               } : {}),
               
-              // Dados específicos do operador
-              ...(currentUser?.isOperator ? {
-                monthlyTrafficVolume: currentUser?.specificData?.monthly_volume || '',
-                commissionModels: currentUser?.specificData?.commission_models || [],
-                paymentFrequency: currentUser?.specificData?.payment_schedule || 'mensal',
-                acceptedCountries: currentUser?.specificData?.accepted_countries || [],
-                platformType: currentUser?.specificData?.platform_type || '',
-                acceptsRetargeting: currentUser?.specificData?.accepts_retargeting || false,
-                installsPostback: currentUser?.specificData?.installs_postback || false,
-                whiteLabel: currentUser?.specificData?.white_label || '',
+              // Dados específicos do operador com type safety
+              ...(currentUser?.isOperator && operatorData ? {
+                monthlyTrafficVolume: operatorData.monthly_volume || '',
+                commissionModels: operatorData.commission_models || [],
+                paymentFrequency: operatorData.payment_schedule || 'mensal',
+                acceptedCountries: operatorData.accepted_countries || [],
+                platformType: operatorData.platform_type || '',
+                acceptsRetargeting: operatorData.accepts_retargeting || false,
+                installsPostback: operatorData.installs_postback || false,
+                whiteLabel: operatorData.white_label || '',
               } : {}),
             }}
             onSave={handleSaveProfile}

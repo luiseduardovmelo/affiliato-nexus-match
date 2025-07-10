@@ -72,7 +72,7 @@ export const useFavorites = () => {
         });
       }
 
-      // Converter para formato esperado
+      // Converter para formato esperado com type safety
       return profiles.map(profile => ({
         id: profile.id,
         name: profile.display_name || profile.email || 'Usuário',
@@ -80,11 +80,11 @@ export const useFavorites = () => {
         rating: ratingsMap.has(profile.id) 
           ? ratingsMap.get(profile.id)!.reduce((sum, rating) => sum + rating, 0) / ratingsMap.get(profile.id)!.length
           : 0,
-        role: profile.role === 'afiliado' ? 'affiliate' : 'operator',
+        role: profile.role === 'operador' ? 'operator' as const : 'affiliate' as const,
         country: profile.country || 'Brasil',
-        description: profile.description || `${profile.role === 'afiliado' ? 'Afiliado' : 'Operador'} verificado`,
+        description: profile.description || `${profile.role === 'operador' ? 'Operador' : 'Afiliado'} verificado`,
         addedAt: new Date().toISOString() // Em produção, viria do banco
-      }));
+      })) as FavoriteUser[];
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutos
