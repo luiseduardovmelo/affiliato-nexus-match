@@ -12,6 +12,7 @@ export interface BaseUserProfile {
   status: 'active' | 'inactive' | 'suspended' | 'banned';
   role: 'afiliado' | 'operador' | 'admin';
   description?: string;
+  logo_url?: string;
   rating_cached?: number;
   total_reviews?: number;
 }
@@ -53,11 +54,11 @@ export interface AffiliateProfile extends BaseUserProfile {
 
 export type UserProfile = OperatorProfile | AffiliateProfile;
 
-// Type guards
-export const isOperatorProfile = (profile: UserProfile): profile is OperatorProfile => {
+// Type guards - export as regular functions, not types
+export function isOperatorProfile(profile: UserProfile): profile is OperatorProfile {
   return profile.role === 'operador';
-};
+}
 
-export const isAffiliateProfile = (profile: UserProfile): profile is AffiliateProfile => {
+export function isAffiliateProfile(profile: UserProfile): profile is AffiliateProfile {
   return profile.role === 'afiliado';
-};
+}

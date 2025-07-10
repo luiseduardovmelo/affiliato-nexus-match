@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { validateSecureInput, checkAdvancedRateLimit } from './securityValidation';
 
@@ -51,6 +52,11 @@ export const isValidPassword = (password: string): boolean => {
 export const checkRateLimit = (identifier: string, action: 'login' | 'registration' | 'passwordReset' | 'contactReveal' = 'login'): boolean => {
   const result = checkAdvancedRateLimit(identifier, action);
   return result.allowed;
+};
+
+// Session timeout validation function - now exported
+export const validateSessionTimeout = (lastActivity: Date, maxInactiveMs: number = 30 * 60 * 1000): boolean => {
+  return (Date.now() - lastActivity.getTime()) < maxInactiveMs;
 };
 
 // Enhanced security event logging with structured data
